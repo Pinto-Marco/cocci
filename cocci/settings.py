@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-^m*h#ewhjg5&9rcuyjl12$!8zx@!wf1bv2%khph&il0k%ol(5!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '44af-2-37-90-76.ngrok-free.app']
 
 
 # Application definition
@@ -170,3 +170,4 @@ CSRF_COOKIE_SAMESITE = None
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880

@@ -19,20 +19,59 @@ class ProductSerializer(serializers.ModelSerializer):
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
     )
+    category_id = serializers.IntegerField(write_only=True, required=False)
+    category_name = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = product_models.Product
         fields = '__all__'
-        extra_fields = ['uploaded_images']
+        extra_fields = ['uploaded_images', 'category_id', 'category_name']
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
+        category_id = validated_data.pop('category_id', None)
+        category_name = validated_data.pop('category_name', None)
+
+        if category_id:
+            category = product_models.Category.objects.get(id=category_id)
+        elif category_name:
+            category, _ = product_models.Category.objects.get_or_create(name=category_name)
+        else:
+            raise serializers.ValidationError("Devi fornire un 'category_id' o un 'category_name'.")
+
         product = product_models.Product.objects.create(**validated_data)
-        
+
+        product_models.ProductCategory.objects.create(product=product, category=category)
+
         for image in uploaded_images:
             product_models.ProductImage.objects.create(product=product, image=image)
         
         return product
+    
+# class ProductSerializer(serializers.ModelSerializer):
+#     images = ProductImageSerializer(many=True, read_only=True, source='productimage_set')
+#     uploaded_images = serializers.ListField(
+#         child=serializers.ImageField(), write_only=True, required=False
+#     )
+
+#     class Meta:
+#         model = product_models.Product
+#         fields = '__all__'
+#         extra_fields = ['uploaded_images']
+
+#     def create(self, validated_data):
+#         uploaded_images = validated_data.pop('uploaded_images', [])
+#         product = product_models.Product.objects.create(**validated_data)
+        
+#         for image in uploaded_images:
+#             product_models.ProductImage.objects.create(product=product, image=image)
+        
+#         return product
 
 class ProductDeleteSerializer(serializers.Serializer):
     code = serializers.CharField(required=True, max_length=16, help_text="Codice del prodotto da eliminare")
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = product_models.Category
+        fields = ['id', 'name']

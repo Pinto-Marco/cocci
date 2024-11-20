@@ -11,6 +11,7 @@ class Product(models.Model):
     title = models.CharField(max_length=15)
     description = models.TextField(null=True, blank=True)
     barcode = models.ImageField(upload_to='uploads/barcodes/', blank=True, null=True)
+    out = models.BooleanField(default=False)
 
     def __str__(self):
         return self.code
@@ -51,3 +52,16 @@ class ProductHistory(models.Model):
         local_timestamp = timezone.localtime(self.timestamp)  # Converte il timestamp in orario locale
         formatted_timestamp = local_timestamp.strftime('%d-%m-%Y %H:%M:%S')  # Formatta la data e ora
         return f"{self.code} - {self.action} - {formatted_timestamp}"
+    
+class Category(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+    
+class ProductCategory(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.product.code} - {self.category.name}"
