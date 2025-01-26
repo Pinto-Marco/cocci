@@ -26,6 +26,14 @@ class Product(models.Model):
         
         super().save(*args, **kwargs)
 
+    def get_category(self):
+        if ProductCategory.objects.filter(product=self).exists():
+            return ProductCategory.objects.filter(product=self).first().category
+        return None
+    
+    def get_tags(self):
+        return ProductTag.objects.filter(product=self).values_list('tag__name', flat=True)
+
     
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -57,11 +65,29 @@ class Category(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.name
+        return f"{self.id} - {self.name}"
     
 class ProductCategory(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.product.code} - {self.category.name}"
+        return f"{self.id} - {self.product.code} - {self.category.name}"
+    
+    def save(self, *args, **kwargs):
+        if self.product.get_category() is not None:
+            raise ValueError("Il prodotto ha già una categoria associata")
+        super().save(*args, **kwargs)
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.id} - {self.name}"
+    
+class ProductTag(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.id} - {self.product.code} - {self.tag.name}"

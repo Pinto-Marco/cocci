@@ -19,4 +19,8 @@ class ProductAdmin(admin.ModelAdmin):
 
 admin.site.register(product_models.Product, ProductAdmin)
 admin.site.register(product_models.ProductHistory)
+admin.site.register(product_models.ProductCategory)
+admin.site.register(product_models.Category)
+admin.site.register(product_models.Tag)
+admin.site.register(product_models.ProductTag)
 
