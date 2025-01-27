@@ -4,10 +4,18 @@ from . import models as product_models
 
 class ProductImageInline(admin.TabularInline):  # Inline per le immagini del prodotto
     model = product_models.ProductImage
-    extra = 1  
+    extra = 1
+
+class ProductCategoryInline(admin.TabularInline):  # Inline per le categorie del prodotto
+    model = product_models.ProductCategory
+    extra = 1
+
+class ProductTagInline(admin.TabularInline):  # Inline per i tag del prodotto
+    model = product_models.ProductTag
+    extra = 1
 
 class ProductAdmin(admin.ModelAdmin):
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, ProductCategoryInline, ProductTagInline]  # Aggiungi gli inline alla vista
     list_display = ('code', 'title', 'price', 'barcode_image')  # Aggiungi barcode_image alla lista
 
     def barcode_image(self, obj):

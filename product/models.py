@@ -5,6 +5,8 @@ from barcode.writer import ImageWriter
 from io import BytesIO
 from django.utils import timezone
 
+# tag e category devono stare dentro a product in admin
+
 class Product(models.Model):
     code = models.CharField(max_length=16)
     price = models.FloatField(null=True, blank=True)
@@ -14,7 +16,7 @@ class Product(models.Model):
     out = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.code
+        return f"{self.title} - {self.code}"
 
     def save(self, *args, **kwargs):
         if not self.barcode:
