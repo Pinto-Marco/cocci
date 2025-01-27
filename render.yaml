@@ -21,8 +21,8 @@ services:
       - key: WEB_CONCURRENCY
         value: 4
       - key: SUPERUSER_USERNAME
-        value: admin
+        value: marcone
       - key: SUPERUSER_EMAIL
-        value: admin@example.com
+        value: marcone@example.com
       - key: SUPERUSER_PASSWORD
-        value: admin
+        value: supersecretpassword
