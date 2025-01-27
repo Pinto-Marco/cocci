@@ -109,7 +109,9 @@ WSGI_APPLICATION = 'cocci.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         # Replace this value with your local database's connection string.
-        default='postgresql://postgres:postgres@localhost:5432/mysite',
+        # default='postgresql://postgres:postgres@localhost:5432/mysite',
+        default='postgresql://mysite:68gFosgXDwcVtNvr1IYgAOso85YG4cKb@dpg-cub72at6l47c739vbgt0-a/mysite_sf5g',
+
         conn_max_age=600
     )
 }
