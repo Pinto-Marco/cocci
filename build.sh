@@ -18,9 +18,9 @@ python manage.py migrate
 python manage.py shell -c "
 import os;
 from django.contrib.auth.models import User;
-username = prova
-email = prova@gmail.com
-password = prova
+username = 'prova'
+email = 'prova@gmail.com'
+password = 'prova'
 if not User.objects.filter(username=username).exists():
     User.objects.create_superuser(username=username, email=email, password=password)
     print(f'Superuser {username} created.')
