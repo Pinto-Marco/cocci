@@ -56,15 +56,15 @@ class ProductDeleteView(APIView):
                 return Response({"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class CategoryListView(APIView):
-    @extend_schema(
-        responses=product_serializers.CategorySerializer(many=True),
-        description="Retrieve the list of all categories."
-    )
-    def get(self, request):
-        categories = product_models.Category.objects.all()
-        serializer = product_serializers.CategorySerializer(categories, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+# class CategoryListView(APIView):
+#     @extend_schema(
+#         responses=product_serializers.CategorySerializer(many=True),
+#         description="Retrieve the list of all categories."
+#     )
+#     def get(self, request):
+#         categories = product_models.Category.objects.all()
+#         serializer = product_serializers.CategorySerializer(categories, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ProductTransferView(APIView):

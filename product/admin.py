@@ -6,16 +6,17 @@ class ProductImageInline(admin.TabularInline):  # Inline per le immagini del pro
     model = product_models.ProductImage
     extra = 1
 
-class ProductCategoryInline(admin.TabularInline):  # Inline per le categorie del prodotto
-    model = product_models.ProductCategory
-    extra = 1
+# class ProductCategoryInline(admin.TabularInline):  # Inline per le categorie del prodotto
+#     model = product_models.ProductCategory
+#     extra = 1
 
 class ProductTagInline(admin.TabularInline):  # Inline per i tag del prodotto
     model = product_models.ProductTag
     extra = 1
 
+# ProductCategoryInline
 class ProductAdmin(admin.ModelAdmin):
-    inlines = [ProductImageInline, ProductCategoryInline, ProductTagInline]  # Aggiungi gli inline alla vista
+    inlines = [ProductImageInline, ProductTagInline]  # Aggiungi gli inline alla vista
     list_display = ('code', 'title', 'price', 'barcode_image')  # Aggiungi barcode_image alla lista
 
     def barcode_image(self, obj):
@@ -27,8 +28,8 @@ class ProductAdmin(admin.ModelAdmin):
 
 admin.site.register(product_models.Product, ProductAdmin)
 admin.site.register(product_models.ProductHistory)
-admin.site.register(product_models.ProductCategory)
-admin.site.register(product_models.Category)
+# admin.site.register(product_models.ProductCategory)
+# admin.site.register(product_models.Category)
 admin.site.register(product_models.Tag)
 admin.site.register(product_models.ProductTag)
 
