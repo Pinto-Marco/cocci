@@ -32,35 +32,67 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
-        # category_id = validated_data.pop('category_id', None)
-        # category_name = validated_data.pop('category_name', None)
-        tags = validated_data.pop('tags', None)
+        tags = validated_data.pop('tags', [])
 
-        # if category_id:
-        #     category = product_models.Category.objects.get(id=category_id)
-        # elif category_name:
-        #     category, _ = product_models.Category.objects.get_or_create(name=category_name)
-        # else:
-        #     raise serializers.ValidationError("Devi fornire un 'category_id' o un 'category_name'.")
-
+        # Creiamo il prodotto
         product = product_models.Product.objects.create(**validated_data)
 
-        # product_models.ProductCategory.objects.create(product=product, category=category)
+        # Assicuriamoci che il prodotto sia salvato prima di creare relazioni
+        product.save()
 
-        if tags:
-            for tag in tags:
-                if not product_models.Tag.objects.filter(name=tag).exists():
-                    new_tag = product_models.Tag.objects.get_or_create(name=tag)
-                    product_models.ProductTag.objects.create(tag=new_tag, product=product)
-                else:
-                    old_tag = product_models.Tag.objects.get(name=tag)
-                    if not product_models.ProductTag.objects.filter(tag=old_tag, product=product).exists():
-                        product_models.ProductTag.objects.create(tag=old_tag, product=product)
+        # Gestione dei tag in modo più efficiente
+        tag_objects = []
+        for tag in tags:
+            tag_obj, _ = product_models.Tag.objects.get_or_create(name=tag)
+            tag_objects.append(tag_obj)
 
-        for image in uploaded_images:
-            product_models.ProductImage.objects.create(product=product, image=image)
-        
+        # Creiamo le relazioni tra prodotto e tag
+        product_models.ProductTag.objects.bulk_create(
+            [product_models.ProductTag(tag=tag, product=product) for tag in tag_objects],
+            ignore_conflicts=True  # Evita errori in caso di duplicati
+        )
+
+        # Creiamo le immagini
+        product_models.ProductImage.objects.bulk_create(
+            [product_models.ProductImage(product=product, image=image) for image in uploaded_images]
+        )
+
         return product
+
+
+    # def create(self, validated_data):
+    #     uploaded_images = validated_data.pop('uploaded_images', [])
+    #     # category_id = validated_data.pop('category_id', None)
+    #     # category_name = validated_data.pop('category_name', None)
+    #     tags = validated_data.pop('tags', None)
+
+    #     # if category_id:
+    #     #     category = product_models.Category.objects.get(id=category_id)
+    #     # elif category_name:
+    #     #     category, _ = product_models.Category.objects.get_or_create(name=category_name)
+    #     # else:
+    #     #     raise serializers.ValidationError("Devi fornire un 'category_id' o un 'category_name'.")
+
+    #     product = product_models.Product.objects.create(**validated_data)
+
+    #     # product_models.ProductCategory.objects.create(product=product, category=category)
+
+    #     if tags:
+    #         for tag in tags:
+    #             if not product_models.Tag.objects.filter(name=tag).exists():
+    #                 new_tag, is_created = product_models.Tag.objects.get_or_create(name=tag)
+    #                 if is_created:
+    #                     product_models.ProductTag.objects.create(tag=new_tag, product=product)
+
+    #             else:
+    #                 old_tag = product_models.Tag.objects.get(name=tag)
+    #                 if not product_models.ProductTag.objects.filter(tag=old_tag, product=product).exists():
+    #                     product_models.ProductTag.objects.create(tag=old_tag, product=product)
+
+    #     for image in uploaded_images:
+    #         product_models.ProductImage.objects.create(product=product, image=image)
+        
+    #     return product
 
     # def get_category_name(self, obj):
     #     if obj.get_category() is None:
