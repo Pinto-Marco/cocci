@@ -25,7 +25,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = product_models.Product
-        fields = ['id', 'code', 'price', 'title', 'description', 'barcode', 'out', 'category_id', 'category_name', 'tags', 'images', 'uploaded_images']
+        fields = ['id', 'code', 'price', 'title', 'description', 'barcode', 'out', 'tags', 'images', 'uploaded_images']
         # fields = '__all__'
 
         # extra_fields = ['uploaded_images', 'category_id', 'category_name']
