@@ -45,7 +45,7 @@ if DEBUG:
     # and renames the files with unique names for each version to support long-term caching
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '44af-2-37-90-76.ngrok-free.app', 'mysite-s962.onrender.com', 'cocci.herokuapp']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '44af-2-37-90-76.ngrok-free.app', 'mysite-s962.onrender.com', 'cocci.herokuapp', 'cocci.onrender.com', ]
 
 
 # Application definition
