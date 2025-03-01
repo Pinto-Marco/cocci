@@ -5,7 +5,7 @@ from barcode.writer import ImageWriter
 from io import BytesIO
 from django.utils import timezone
 
-# tag deve stare dentro a product in admin
+# tag deve stare dentro a product in admi
 
 class Product(models.Model):
     code = models.CharField(max_length=16)
