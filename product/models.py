@@ -31,7 +31,7 @@ class Product(models.Model):
     # def get_category(self):
     #     if ProductCategory.objects.filter(product=self).exists():
     #         return ProductCategory.objects.filter(product=self).first().category
-        return None
+        # return None
     
     def get_tags(self):
         return ProductTag.objects.filter(product=self).values_list('tag__name', flat=True)
