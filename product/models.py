@@ -14,6 +14,7 @@ class Product(models.Model):
     description = models.TextField(null=True, blank=True)
     barcode = models.ImageField(upload_to='uploads/barcodes/', blank=True, null=True)
     out = models.BooleanField(default=False)
+    penalty = models.FloatField(default=0)
 
     def __str__(self):
         return f"{self.title} - {self.code}"
