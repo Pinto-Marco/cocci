@@ -10,7 +10,7 @@ from django.utils import timezone
 class Product(models.Model):
     code = models.CharField(max_length=16)
     price = models.FloatField(null=True, blank=True)
-    title = models.CharField(max_length=15)
+    title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     barcode = models.ImageField(upload_to='uploads/barcodes/', blank=True, null=True)
     out = models.BooleanField(default=False)
