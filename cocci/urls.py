@@ -30,3 +30,7 @@ urlpatterns = [
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# lista di tutti i prodotti
+# update del prodotto
+# is_available

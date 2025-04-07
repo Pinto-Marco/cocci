@@ -91,3 +91,36 @@ class ProductTransferView(APIView):
             },
             status=status.HTTP_200_OK
         )
+    
+class ProductDetailsUpdateView(APIView):
+    @extend_schema(
+        request=product_serializers.ProductSerializer,
+        responses=product_serializers.ProductSerializer,
+        description="Retrieve product details."
+    )
+    def get(self, request, code):
+        try:
+            product = product_models.Product.objects.get(code=code)
+        except product_models.Product.DoesNotExist:
+            return Response(
+                {"error": "Il prodotto con il codice specificato non esiste."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = product_serializers.ProductSerializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # def put(self, request, code):
+    #     try:
+    #         product = product_models.Product.objects.get(code=code)
+    #     except product_models.Product.DoesNotExist:
+    #         return Response(
+    #             {"error": "Il prodotto con il codice specificato non esiste."},
+    #             status=status.HTTP_404_NOT_FOUND
+    #         )
+
+    #     serializer = product_serializers.ProductSerializer(product, data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

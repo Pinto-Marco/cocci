@@ -45,7 +45,7 @@ if DEBUG:
     # and renames the files with unique names for each version to support long-term caching
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '44af-2-37-90-76.ngrok-free.app', 'mysite-s962.onrender.com', 'cocci.herokuapp', 'cocci.onrender.com', ]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '44af-2-37-90-76.ngrok-free.app', 'mysite-s962.onrender.com', 'cocci.herokuapp', 'cocci.onrender.com', '56.228.2.180', 'ec2-56-228-2-180.eu-north-1.compute.amazonaws.com',]
 
 
 # Application definition
@@ -97,24 +97,24 @@ WSGI_APPLICATION = 'cocci.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 # deploy
 # Replace the SQLite DATABASES configuration with PostgreSQL:
-DATABASES = {
-    'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        # default='postgresql://postgres:postgres@localhost:5432/mysite',
-        default='postgresql://mysite:tV5EmFa5gMVs0JAkr8jhEU45uXYRzUNT@dpg-cuv120aj1k6c73fa8mpg-a.oregon-postgres.render.com/mysite_lvsb',
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         # Replace this value with your local database's connection string.
+#         # default='postgresql://postgres:postgres@localhost:5432/mysite',
+#         default='postgresql://mysite:tV5EmFa5gMVs0JAkr8jhEU45uXYRzUNT@dpg-cuv120aj1k6c73fa8mpg-a.oregon-postgres.render.com/mysite_lvsb',
 
-        conn_max_age=600
-    )
-}
+#         conn_max_age=600
+#     )
+# }
 
 
 # Password validation
@@ -197,13 +197,14 @@ CORS_ALLOW_METHODS = [
 CORS_ALLOW_PRIVATE_NETWORK = True
 CORS_ALLOW_CREDENTIALS = True
 CSRF_USE_SESSIONS = True
-# CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_SAMESITE = None
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+CSRF_TRUSTED_ORIGINS = ['*']
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
