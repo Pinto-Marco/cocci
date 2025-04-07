@@ -17,24 +17,13 @@ class ProductView(APIView):
             product = serializer.save()
             return Response(product_serializers.ProductSerializer(product).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # @extend_schema(
-    #     request=product_serializers.ProductSerializer,
-    #     responses=product_serializers.ProductSerializer,
-    #     description="Create a new product with optional images."
-    # )
-    # def post(self, request):
-    #     serializer = product_serializers.ProductSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         product = serializer.save()
-    #         return Response(product_serializers.ProductSerializer(product).data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        responses=product_serializers.ProductSerializer(many=True),
+        responses=product_serializers.ListProductSerializer(many=True),
         description="Retrieve the list of all products with images."
     )
     def get(self, request):
-        products = product_serializers.ProductSerializer(product_models.Product.objects.all(), many=True)
+        products = product_serializers.ListProductSerializer(product_models.Product.objects.all(), many=True)
         return Response(products.data, status=status.HTTP_200_OK)
 
 
@@ -109,18 +98,34 @@ class ProductDetailsUpdateView(APIView):
 
         serializer = product_serializers.ProductSerializer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    # def put(self, request, code):
-    #     try:
-    #         product = product_models.Product.objects.get(code=code)
-    #     except product_models.Product.DoesNotExist:
-    #         return Response(
-    #             {"error": "Il prodotto con il codice specificato non esiste."},
-    #             status=status.HTTP_404_NOT_FOUND
-    #         )
-
-    #     serializer = product_serializers.ProductSerializer(product, data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @extend_schema(
+        request=product_serializers.ProductUpdateSerializer,
+        description="Update a product with optional images and associate it with a category."
+    )
+    def put(self, request, code):
+        try:
+            product = product_models.Product.objects.get(code=code)
+        except product_models.Product.DoesNotExist:
+            return Response(
+                {"error": "Il prodotto con il codice specificato non esiste."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = product_serializers.ProductUpdateSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(True, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    def delete(self, request, code):
+        try:
+            product = product_models.Product.objects.get(code=code)
+        except product_models.Product.DoesNotExist:
+            return Response(
+                {"error": "Il prodotto con il codice specificato non esiste."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        product.delete()
+        return Response(True, status=status.HTTP_200_OK)
+        

@@ -10,25 +10,54 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ['image_base64']
 
     def get_image_base64(self, obj):
+        print(obj.image.path)
         with open(obj.image.path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
+        
+        
+class ProductImageUrlSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = product_models.ProductImage
+        fields = ['image_url']
+
+    def get_image_url(self, obj):
+        return obj.image.url if obj.image else None
+        
+        
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = product_models.Tag
+        fields = ['name']
+        
+        
+class ProductTagSerializer(serializers.ModelSerializer):
+    tag = TagSerializer(read_only=True)
+    class Meta:
+        model = product_models.ProductTag
+        fields = ['tag']
+        
+        
+class ListProductSerializer(serializers.ModelSerializer):
+    images = ProductImageUrlSerializer(many=True, read_only=True, source='productimage_set')
+    tags = ProductTagSerializer(many=True, read_only=True, source='product_tags')
+    
+    class Meta:
+        model = product_models.Product
+        fields = ['id', 'code', 'price', 'title', 'description', 'barcode', 'out', 'images', 'tags', 'penalty', 'is_available']
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    images = ProductImageSerializer(many=True, read_only=True, source='productimage_set')
+    images = ProductImageUrlSerializer(many=True, read_only=True, source='productimage_set')
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
     )
-    # category_id = serializers.IntegerField(required=False)
-    # category_name = serializers.CharField(required=False)
     tags = serializers.ListField(child=serializers.CharField(), required=False)
 
     class Meta:
         model = product_models.Product
         fields = ['id', 'code', 'price', 'title', 'description', 'barcode', 'out', 'tags', 'images', 'uploaded_images', 'penalty', 'is_available']
-        # fields = '__all__'
-
-        # extra_fields = ['uploaded_images', 'category_id', 'category_name']
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
@@ -58,83 +87,61 @@ class ProductSerializer(serializers.ModelSerializer):
         )
 
         return product
-
-
-    # def create(self, validated_data):
-    #     uploaded_images = validated_data.pop('uploaded_images', [])
-    #     # category_id = validated_data.pop('category_id', None)
-    #     # category_name = validated_data.pop('category_name', None)
-    #     tags = validated_data.pop('tags', None)
-
-    #     # if category_id:
-    #     #     category = product_models.Category.objects.get(id=category_id)
-    #     # elif category_name:
-    #     #     category, _ = product_models.Category.objects.get_or_create(name=category_name)
-    #     # else:
-    #     #     raise serializers.ValidationError("Devi fornire un 'category_id' o un 'category_name'.")
-
-    #     product = product_models.Product.objects.create(**validated_data)
-
-    #     # product_models.ProductCategory.objects.create(product=product, category=category)
-
-    #     if tags:
-    #         for tag in tags:
-    #             if not product_models.Tag.objects.filter(name=tag).exists():
-    #                 new_tag, is_created = product_models.Tag.objects.get_or_create(name=tag)
-    #                 if is_created:
-    #                     product_models.ProductTag.objects.create(tag=new_tag, product=product)
-
-    #             else:
-    #                 old_tag = product_models.Tag.objects.get(name=tag)
-    #                 if not product_models.ProductTag.objects.filter(tag=old_tag, product=product).exists():
-    #                     product_models.ProductTag.objects.create(tag=old_tag, product=product)
-
-    #     for image in uploaded_images:
-    #         product_models.ProductImage.objects.create(product=product, image=image)
-        
-    #     return product
-
-    # def get_category_name(self, obj):
-    #     if obj.get_category() is None:
-    #         return None
-    #     return obj.get_category().name
-    
-    # def get_category_id(self, obj):
-    #     if obj.get_category() is None:
-    #         return None
-    #     return obj.get_category().id
     
     def get_tags(self, obj):
         if obj.get_tags() is None:
             return []
         return obj.get_tags()
-
-
     
-# class ProductSerializer(serializers.ModelSerializer):
-#     images = ProductImageSerializer(many=True, read_only=True, source='productimage_set')
-#     uploaded_images = serializers.ListField(
-#         child=serializers.ImageField(), write_only=True, required=False
-#     )
-
-#     class Meta:
-#         model = product_models.Product
-#         fields = '__all__'
-#         extra_fields = ['uploaded_images']
-
-#     def create(self, validated_data):
-#         uploaded_images = validated_data.pop('uploaded_images', [])
-#         product = product_models.Product.objects.create(**validated_data)
+    
+class ProductUpdateSerializer(serializers.ModelSerializer):
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(), write_only=True, required=False
+    )
+    
+    tags = serializers.ListField(child=serializers.CharField(), required=False)
+    
+    class Meta:
+        model = product_models.Product
+        fields = ['price', 'title', 'description', 'tags', 'uploaded_images', 'penalty', 'is_available']
+        extra_kwargs = {
+            'price': {'required': False},
+            'title': {'required': False},
+            'description': {'required': False},
+            'tags': {'required': False},
+            'uploaded_images': {'required': False},
+            'penalty': {'required': False},
+            'is_available': {'required': False}
+        }
         
-#         for image in uploaded_images:
-#             product_models.ProductImage.objects.create(product=product, image=image)
-        
-#         return product
+    def update(self, instance, validated_data):
+        uploaded_images = validated_data.pop('uploaded_images', [])
+        tags = validated_data.pop('tags', [])
+        # Aggiorniamo i campi del prodotto
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        # Aggiorniamo le immagini
+        for image in uploaded_images:
+            product_models.ProductImage.objects.create(product=instance, image=image)
+        # Aggiorniamo i tag
+        if len(tags) > 0:
+            old_tags = product_models.ProductTag.objects.filter(product=instance)
+            for tag in tags:
+                if tag not in old_tags:
+                    try:
+                        tag_obj = product_models.Tag.objects.get(name=tag)
+                        product_models.ProductTag.objects.create(tag=tag_obj, product=instance)
+                    except product_models.Tag.DoesNotExist:
+                        tag_obj = product_models.Tag.objects.create(name=tag)
+                        product_models.ProductTag.objects.create(tag=tag_obj, product=instance)
+            
+            for old_tag in old_tags:
+                if old_tag not in tags:
+                    old_tag.delete()
+                
+        instance.save()
+        return instance
+
 
 class ProductDeleteSerializer(serializers.Serializer):
     code = serializers.CharField(required=True, max_length=16, help_text="Codice del prodotto da eliminare")
-
-# class CategorySerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = product_models.Category
-#         fields = ['id', 'name']
