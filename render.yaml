@@ -1,0 +1,28 @@
+databases:
+  - name: coccidb
+    plan: free
+    databaseName: mysite
+    user: mysite
+
+services:
+  - type: web
+    plan: free
+    name: cocci
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "python -m gunicorn cocci.asgi:application -k uvicorn.workers.UvicornWorker"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: coccidb
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
+      - key: SUPERUSER_USERNAME
+        value: batman
+      - key: SUPERUSER_EMAIL
+        value: batman@grottanera.com
+      - key: SUPERUSER_PASSWORD
+        value: batman
