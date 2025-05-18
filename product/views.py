@@ -4,6 +4,8 @@ from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from product import serializers as product_serializers
 from product import models as product_models
+from django.core.paginator import Paginator, EmptyPage, InvalidPage
+from drf_spectacular.utils import OpenApiParameter
 
 class ProductView(APIView):
     @extend_schema(
@@ -17,25 +19,57 @@ class ProductView(APIView):
             product = serializer.save()
             return Response(product_serializers.ProductSerializer(product).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # @extend_schema(
-    #     request=product_serializers.ProductSerializer,
-    #     responses=product_serializers.ProductSerializer,
-    #     description="Create a new product with optional images."
-    # )
-    # def post(self, request):
-    #     serializer = product_serializers.ProductSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         product = serializer.save()
-    #         return Response(product_serializers.ProductSerializer(product).data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
+        parameters=[
+            OpenApiParameter(name='page', type=int, description='Page number', required=False),
+            OpenApiParameter(name='page_size', type=int, description='Number of items per page', required=False),
+            OpenApiParameter(name='tags', type=str, description='Comma-separated list of tag IDs', required=False),
+            OpenApiParameter(name='order_by_price', type=str, description='Order by price: "asc" or "desc"', required=False),
+        ],
         responses=product_serializers.ProductSerializer(many=True),
-        description="Retrieve the list of all products with images."
+        description="Retrieve the list of all products with images, with optional filtering and ordering."
     )
     def get(self, request):
-        products = product_serializers.ProductSerializer(product_models.Product.objects.all(), many=True)
-        return Response(products.data, status=status.HTTP_200_OK)
+        # Get query parameters
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+        tag_ids = request.query_params.get('tags', '').split(',')
+        order_by_price = request.query_params.get('order_by_price', None)
+
+        # Start with all products
+        queryset = product_models.Product.objects.all()
+
+        # Filter by tags if provided
+        if tag_ids and tag_ids[0]:  # Check if there are any tag IDs
+            queryset = queryset.filter(producttag__tag_id__in=tag_ids).distinct()
+
+        # Order by price if specified
+        if order_by_price:
+            order_field = 'price' if order_by_price.lower() == 'asc' else '-price'
+            queryset = queryset.order_by(order_field)
+
+        # Apply pagination
+        paginator = Paginator(queryset, page_size)
+        try:
+            products_page = paginator.page(page)
+        except (EmptyPage, InvalidPage):
+            products_page = paginator.page(paginator.num_pages)
+
+        # Serialize the data
+        serializer = product_serializers.ProductSerializer(products_page, many=True)
+
+        # Prepare pagination data
+        response_data = {
+            'count': paginator.count,
+            'num_pages': paginator.num_pages,
+            'current_page': page,
+            'next': products_page.has_next(),
+            'previous': products_page.has_previous(),
+            'results': serializer.data
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class ProductDeleteView(APIView):
