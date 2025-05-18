@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cocci Store{% endblock %}</title>
+    {# Link to your static CSS file. Make sure you have configured static files in settings.py #}
+    {# and run 'python manage.py collectstatic' #}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="navbar__brand">COCCI</div>
+        <nav class="navbar__menu">
+            <a href="#" class="navbar__link">SHOP</a>
+            <details class="navbar__link dropdown">
+                <summary>CATEGORIES</summary>
+                <div class="dropdown__panel">
+                    {% for category in categories %}
+                    <a href="{{ category.get_absolute_url }}" class="dropdown__item">{{ category.name }}</a>
+                    {% endfor %}
+                </div>
+            </details>
+            <a href="#" class="navbar__link">CONTATTI</a>
+        </nav>
+        <nav class="navbar__user">
+            CART {{ cart.quantity }}
+        </nav>
+    </header>
+
+    <main>
+        {# This is where the content of specific pages will go #}
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        {# Footer content #}
+        <div class="footer">
+            <p>&copy; 2025 Cocci</p>
+        </div>
+    </footer>
+
+    {# Link to your static JavaScript file #}
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+
+</html>
