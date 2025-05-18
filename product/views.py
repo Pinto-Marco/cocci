@@ -4,6 +4,10 @@ from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from product import serializers as product_serializers
 from product import models as product_models
+from django.shortcuts import render
+
+import json
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 class ProductView(APIView):
     @extend_schema(
@@ -124,3 +128,42 @@ class ProductDetailsUpdateView(APIView):
     #         serializer.save()
     #         return Response(serializer.data, status=status.HTTP_200_OK)
     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def StoreView(request):
+    product_list = product_models.Product.objects.all().order_by('id')
+    paginator = Paginator(product_list, 5)  # Show 5 products per page
+
+    page = request.GET.get('page')
+    try:
+        products = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        products = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        products = paginator.page(paginator.num_pages)
+
+    products_serialized = product_serializers.ProductSerializer(products, many=True)
+
+    refined_products = []
+    for product in products_serialized.data:
+        refined_product = {
+            'title': product['title'],
+            'price': product['price'],
+        }
+        if 'images' in product.keys(): # Or .all() depending on relation
+            # Assuming product.images is a related manager for image objects
+            # and each image object has an 'image_base64' attribute.
+            image_base64_list = [img['image_base64'] for img in product['images']]
+            refined_product['images_json_data'] = json.dumps(image_base64_list)
+        else:
+            refined_product['images_json_data'] = "[]"
+
+        refined_products.append(refined_product)
+
+    tags = product_models.Tag.objects.all()
+
+    tags = [tag.name for tag in tags]
+
+    return render(request, 'store.html', context={'products': refined_products, 'tags': tags, 'page_obj': products})
