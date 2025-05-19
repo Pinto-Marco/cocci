@@ -18,12 +18,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from product.views import StoreView, HomeView, ContactsView
 
 from cocci import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('products/', include('product.urls')),
+    path('cart/', include('orders.urls')),
+    path('', HomeView, name='home'),
+    path('archive/', StoreView, name='archive'),
+    path('contacts/', ContactsView, name='contacts'),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('swagger/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),

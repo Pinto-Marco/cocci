@@ -1,0 +1,14 @@
+{% extends 'base.html' %} {% block content %}
+<div class="cart-summary">
+  <div class="checkout-tile" style="padding: 2rem 2rem 1rem 2rem; font-size: 2rem; font-weight: 900;">
+    Order Confirmed
+  </div>
+  <div class="checkout-tile">
+    Order ID:<strong>{{ order.id }}</strong>
+  </div>
+  <div class="checkout-tile" style="border-bottom: 1px solid #000; padding-bottom: 2rem;">
+    Total: <strong>{{ order.total }} EUR</strong>
+  </div>
+  <a href="{% url 'archive' %}" class="checkout-btn" style="border-left: none; border-right: none;">Shop Again</a>
+</div>
+{% endblock %}

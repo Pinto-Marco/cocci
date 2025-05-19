@@ -5,6 +5,7 @@ from drf_spectacular.utils import extend_schema
 from product import serializers as product_serializers
 from product import models as product_models
 from django.shortcuts import render
+from drf_spectacular.openapi import OpenApiParameter
 
 import json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -163,10 +164,18 @@ class ProductDetailsUpdateView(APIView):
 
 
 def StoreView(request):
-    product_list = product_models.Product.objects.all().order_by('id')
-    paginator = Paginator(product_list, 5)  # Show 5 products per page
+    tags = request.GET.get('tags')
+    if tags:
+        tags = tags.split(',')
+        print(tags)
+        product_list = product_models.Product.objects.filter(producttag__tag__name__in=tags).distinct().order_by('id')
+    else:
+        product_list = product_models.Product.objects.all().distinct().order_by('id')
+
+    paginator = Paginator(product_list, 12)  # Show 5 products per page
 
     page = request.GET.get('page')
+
     try:
         products = paginator.page(page)
     except PageNotAnInteger:
@@ -183,6 +192,10 @@ def StoreView(request):
         refined_product = {
             'title': product['title'],
             'price': product['price'],
+            'code': product['code'],
+            'out': product['out'],
+            'is_available': product['is_available'],
+            'description': product['description'],
         }
         if 'images' in product.keys(): # Or .all() depending on relation
             # Assuming product.images is a related manager for image objects
@@ -199,3 +212,10 @@ def StoreView(request):
     tags = [tag.name for tag in tags]
 
     return render(request, 'store.html', context={'products': refined_products, 'tags': tags, 'page_obj': products})
+
+
+def HomeView(request):
+    return render(request, 'home.html')
+
+def ContactsView(request):
+    return render(request, 'contacts.html')

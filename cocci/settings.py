@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'product.apps.ProductConfig',
+    'orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
@@ -75,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'orders.middleware.CartMiddleware',
 ]
 
 ROOT_URLCONF = 'cocci.urls'
@@ -92,6 +94,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'orders.context_processors.cart_processor',
             ],
         },
     },

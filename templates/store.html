@@ -5,20 +5,78 @@
 
 <!-- Utility Bar -->
 <section class="utility-bar">
-    <button id="filterBtn" class="utility-bar__button">FILTERS</button>
+    <div style="display: flex; color: #000;">
+        <button id="filterBtn" class="utility-bar__button">FILTERS</button>
+        <div id="clear-filters" href="{% url 'archive' %}" style="color: #000; cursor: pointer; height: 18px; margin-left: 0.5rem;"><svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"/></svg></div>
+    </div>
     <button id="sortBtn" class="utility-bar__button">SORT</button>
 </section>
 
 <section id="filterPanel" class="filter-panel" hidden>
     {% for tag in tags %}
-    <button id="applyFilters" class="filter-panel__apply">{{tag|title}}</button>
+    <button id="applyFilters_{{ tag }}" class="filter-panel__tag">{{tag|title}}</button>
+    <script>
+        document.getElementById("applyFilters_{{ tag }}").addEventListener("click", function() {
+            let selected = applyFilters("{{ tag }}");
+            if (selected) {
+                document.getElementById("applyFilters_{{ tag }}").classList.add("is-selected");
+            } else {
+                document.getElementById("applyFilters_{{ tag }}").classList.remove("is-selected");
+            }
+        });
+
+        // Check if the tag is in the URL and set the button state
+        if (window.location.search.includes("{{ tag }}")) {
+            document.getElementById("applyFilters_{{ tag }}").classList.add("is-selected");
+        }
+    </script>
     {% endfor %}
+    <script>
+        const tags = new URLSearchParams(window.location.search).getAll('tags');
+        let selectedTags = [];
+        for (const tag of tags) {
+                selectedTags = tag.split(',');
+        }
+        if (selectedTags.includes('')) {
+            selectedTags = selectedTags.filter(tag => tag !== '');
+        }
+        if (selectedTags.length === 0) {
+            document.getElementById("clear-filters").style.display = "none";
+        } else {
+            document.getElementById("clear-filters").style.display = "flex";
+        }
+        function applyFilters(tag) {
+            document.getElementById("clear-filters").style.display = "flex";
+            if (selectedTags.includes(tag)) {
+                selectedTags = selectedTags.filter(tg => tg !== tag);
+                if (selectedTags.length === 0) {
+                    window.location.search = '';
+                    document.getElementById("clear-filters").style.display = "none";
+                    return false;
+                }
+                window.location.search = 'tags=' + selectedTags.join(',');
+                return false;
+            } else {
+                selectedTags.push(tag);
+                window.location.search = 'tags=' + selectedTags.join(',');
+                return true;
+            }
+        }
+        document.getElementById("clear-filters").addEventListener("click", function() {
+            selectedTags = [];
+            window.location.search = '';
+            document.getElementById("clear-filters").style.display = "none";
+            for (const tag of tags) {
+                document.getElementById("applyFilters_{{ tag }}").classList.remove("is-selected");
+            }
+        })
+    </script>
 </section>
 
 <!-- Sort Menu (hidden by default) -->
 <section id="sortMenu" class="sort-menu" hidden>
-    <button data-sort="price_asc">Price: Low → High</button>
-    <button data-sort="price_desc">Price: High → Low</button>
+    <button data-sort="price_asc">Low → High $</button>
+    <button data-sort="price_desc">High → Low $</button>
     <button data-sort="year_desc">Newest</button>
     <button data-sort="year_asc">Oldest</button>
 </section>
@@ -27,12 +85,16 @@
 <section id="productGrid" class="product-grid">
     {% for product in products %}
     <article class="product-card {% if product.sold_out %}is-sold-out{% endif %}"
-        data-price="{{ product.price|floatformat:" 2" }}" data-year="{{ product.year }}" data-size="{{ product.size }}"
-        data-brand="{{ product.brand }}" data-images='{{ product.images_json_data }}'>
+        data-price="{{ product.price|floatformat:" 2" }}" data-code='{{ product.code }}' data-images='{{ product.images_json_data }}'>
         <img src="" alt="{{ product.name }}" class="product-card__image">
         <div class="product-card__meta">
-            <h3 class="product-card__title">{{ product.title }}</h3>
-            <p class="product-card__price">€{{ product.price }} EUR / {{ product.size }}</p>
+            <div>
+                <h3 class="product-card__title">{{ product.title }}</h3>
+                <p class="product-card__price">€{{ product.price }} EUR</p>
+            </div>
+            <button class="add-to-cart-btn" data-product-code="{{ product.code }}" data-csrf="{{ csrf_token }}" {% if not product.is_available %}disabled{% endif %}>
+                {% if product.is_available %}+{% else %}\{% endif %}
+            </button>
         </div>
     </article>
     {% empty %}
@@ -57,5 +119,11 @@
     {% endif %}
 </div>
 
+
+<script>
+    
+
+
+</script>
 
 {% endblock %}

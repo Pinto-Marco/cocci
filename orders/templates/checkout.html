@@ -1,0 +1,38 @@
+{% extends 'base.html' %} {% block content %}
+<div class="cart-summary">
+  <div class="checkout-tile" style="padding: 2rem 2rem 1rem 2rem; font-size: 2rem; font-weight: 900;">
+    Summary
+  </div>
+  <div class="checkout-tile">
+    Number of items: {{ total_items }}
+  </div>
+  <div class="checkout-tile" style="border-bottom: 1px solid #000; padding-bottom: 2rem;">
+    Total price: €{{ total_price }} EUR
+  </div>
+  <form method="post" action="{% url 'checkout' %}" style="width: 100%;">
+            {% csrf_token %}
+            <div class="checkout-tile" style="border-bottom: 1px solid #000;">
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Email..."
+                style="outline: none; border: none; background: none; font-size: 1.2rem; width: 100%; padding: 1rem 0;"
+                required
+              />
+            </div>
+            <div class="checkout-tile" style="padding: 2rem; border-bottom: 1px solid #000;">
+              We'll send your order confirmation to this email.
+            </div>
+
+            <div style="display: flex; flex-direction: row; width: 100%;">
+              <a href="{% url 'summary' %}" class="checkout-btn" style="border-right: none; border-left: none;"
+                >Back to Cart</a
+              >
+              <button type="submit" class="checkout-btn" style="border-right: none;">Place Order</button>
+            </div>
+          </form>
+  
+</div>
+
+{% endblock %}
