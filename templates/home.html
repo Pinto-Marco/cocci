@@ -1,6 +1,15 @@
 {% extends "base.html" %} {% load static %} {% block content %}
 
-<!-- Utility Bar -->
-<div class="hero">Cocci</div>
+<div class="hero">
+  <script
+    type="module"
+    src="https://unpkg.com/@splinetool/viewer@1.9.96/build/spline-viewer.js"
+  ></script>
+  <spline-viewer
+    style="height: 90vh"
+    url="https://prod.spline.design/DyIwvWOlzSiJ8RMj/scene.splinecode"
+  ></spline-viewer>
+</div>
+<div style="color: #fff; height: 76vh">.</div>
 
 {% endblock %}

@@ -59,8 +59,17 @@ class AddToCartView(APIView):
         description="Add a product to the cart"
     )
     def post(self, request):
-        product_code = request.data.get('product_code')
-        quantity = int(request.data.get('quantity', 1))
+        if request.data:
+            product_code = request.data.get('product_code')
+            quantity = int(request.data.get('quantity', 1))
+            is_api_call = True
+        elif request.POST:
+            product_code = request.POST.get('product_code')
+            quantity = int(request.POST.get('quantity', 1))
+            is_api_call = False
+        else:
+            return Response({"error": "Missing product_code or quantity"}, status=status.HTTP_400_BAD_REQUEST)
+
         
         try:
             product = Product.objects.get(code=product_code)
@@ -81,7 +90,11 @@ class AddToCartView(APIView):
             cart_item.quantity += quantity
             cart_item.save()
         
-        return Response({"message": "Product added to cart"}, status=status.HTTP_200_OK)
+        if is_api_call:
+            return Response({"message": "Product added to cart"}, status=status.HTTP_200_OK)
+        else:
+            # Assuming you have a URL name 'product_detail' that takes 'product_code'
+            return redirect('product_detail', product_code=product_code)
 
 class RemoveFromCartView(APIView):
     permission_classes = [AllowAny]
@@ -95,8 +108,17 @@ class RemoveFromCartView(APIView):
         description="Remove a product from the cart"
     )
     def post(self, request):
-        product_code = request.data.get('product_code')
-        quantity = int(request.data.get('quantity', 1))
+        if request.data:
+            product_code = request.data.get('product_code')
+            quantity = int(request.data.get('quantity', 1))
+            is_api_call = True
+        elif request.POST:
+            product_code = request.POST.get('product_code')
+            quantity = int(request.POST.get('quantity', 1))
+            is_api_call = False
+        else:
+            return Response({"error": "Missing product_code or quantity"}, status=status.HTTP_400_BAD_REQUEST)
+
         remove_all = request.data.get('remove_all', False)
         
         session_id = get_or_create_cart_id(request)
@@ -247,3 +269,13 @@ def CheckoutPageView(request):
     }
     
     return render(request, 'checkout.html', context)
+
+
+def ProductDetailView(request, code):
+    product = Product.objects.get(code=code)
+    images = ProductImage.objects.filter(product=product)
+    context = {
+        'product': product,
+        'images': [image.image.url for image in images]
+    }
+    return render(request, 'product_detail.html', context)

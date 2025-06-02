@@ -84,19 +84,27 @@
 <!-- Product Grid -->
 <section id="productGrid" class="product-grid">
     {% for product in products %}
-    <article class="product-card {% if product.sold_out %}is-sold-out{% endif %}"
+    <a href="{% url 'product-detail' code=product.code %}" class="product-card-link" style="text-decoration: none;">
+    <article class="product-card"
         data-price="{{ product.price|floatformat:" 2" }}" data-code='{{ product.code }}' data-images='{{ product.images_json_data }}'>
         <img src="" alt="{{ product.name }}" class="product-card__image">
         <div class="product-card__meta">
             <div>
-                <h3 class="product-card__title">{{ product.title }}</h3>
+                <h3 class="product-card__title" style="color: #000;">{{ product.title }}</h3>
                 <p class="product-card__price">€{{ product.price }} EUR</p>
             </div>
-            <button class="add-to-cart-btn" data-product-code="{{ product.code }}" data-csrf="{{ csrf_token }}" {% if not product.is_available %}disabled{% endif %}>
-                {% if product.is_available %}+{% else %}\{% endif %}
+            {% if product.selected or not product.is_available %}
+            <button class="add-to-cart-btn-selected" data-product-code="{{ product.code }}" data-csrf="{{ csrf_token }}" disabled>
+                \
             </button>
+            {% else %}
+            <button class="add-to-cart-btn" data-product-code="{{ product.code }}" data-csrf="{{ csrf_token }}">
+                +
+            </button>
+            {% endif %}
         </div>
     </article>
+    </a>
     {% empty %}
     <p class="empty-state">No products match your criteria.</p>
     {% endfor %}

@@ -9,42 +9,28 @@
       style="height: 12rem; width: 12rem; object-fit: cover"
     />
     <div class="cart-card-title">
-      <span style="font-size: 2rem; font-weight: 900;">
-        {{ item.title }}
-      </span>
+      <span style="font-size: 2rem; font-weight: 900"> {{ item.title }} </span>
       <div>
-        <div style="margin-bottom: 0.5rem; font-size: 1.2rem;">
+        <div style="margin-bottom: 0.5rem; font-size: 1.2rem">
           {{ item.price }} EUR
         </div>
-        <span style="opacity: 0.6;">
-          Penalty fee: {{ item.penalty }} EUR
-        </span>
+        <span style="opacity: 0.6"> Penalty fee: {{ item.penalty }} EUR </span>
       </div>
     </div>
     <div class="cart-card-controls">
-      <button
-          class="qty-button"
-          onclick="updateCart('{{ item.code }}', -1)"
-        >
-          -
-        </button>
-        <span>{{ item.quantity }}</span>
-        <button
-          class="qty-button"
-          onclick="updateCart('{{ item.code }}', 1)"
-        >
-          +
-        </button>
+      <button class="qty-button" onclick="updateCart('{{ item.code }}', -1)">
+        -
+      </button>
     </div>
   </div>
   {% endfor %}
 </div>
 
-<a href="{% url 'checkout' %}" class="checkout-btn">Checkout - {{ total_price }} EUR</a>
+<a href="{% url 'checkout' %}" class="checkout-btn"
+  >Checkout - {{ total_price }} EUR</a
+>
 {% else %}
-<div class="checkout-btn" style="padding: 2rem;">
-  Your cart is empty...
-</div>
+<div class="checkout-btn" style="padding: 2rem">Your cart is empty...</div>
 {% endif %}
 
 <script>

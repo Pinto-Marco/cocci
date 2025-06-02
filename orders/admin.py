@@ -3,6 +3,12 @@ from .models import *
 
 # Register your models here.
 
-admin.site.register(Order)
-admin.site.register(OrderItem)
-admin.site.register(CartItem)
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('label', 'email', 'created_at', 'session_id', 'total')
+    inlines = [OrderItemInline]
+
+admin.site.register(Order, OrderAdmin)

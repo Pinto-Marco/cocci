@@ -13,7 +13,6 @@ class Product(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     barcode = models.ImageField(upload_to='uploads/barcodes/', blank=True, null=True)
-    out = models.BooleanField(default=False)
     penalty = models.FloatField(default=0)
     is_available = models.BooleanField(default=True)
 

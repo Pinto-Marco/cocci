@@ -3,20 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Cocci Store{% endblock %}</title>
+    <title>{% block title %}Cocci Archivio{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
   </head>
 
   <body>
     <header class="navbar">
-      <div class="navbar__brand">COCCI</div>
+      <div class="navbar__brand">
+        <img src="/media/images/logo.svg" alt="Cocci Logo" style="width: 9rem;">
+      </div>
       <nav class="navbar__menu">
         <a href="{% url 'home' %}" class="navbar__link">HOME</a>
         <a href="{% url 'archive' %}" class="navbar__link">ARCHIVE</a>
         <a href="{% url 'contacts' %}" class="navbar__link">CONTACTS</a>
       </nav>
-      <nav class="">
+      <nav class="navbar__user">
         <a href="{% url 'summary' %}" class="cart-link">
           <svg
             width="36"

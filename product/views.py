@@ -1,10 +1,12 @@
+from tokenize import triple_quoted
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from product import serializers as product_serializers
 from product import models as product_models
-from django.shortcuts import render
+from orders import models as orders_models
+from django.shortcuts import render, get_object_or_404
 from drf_spectacular.openapi import OpenApiParameter
 
 import json
@@ -114,7 +116,7 @@ class ProductTransferView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        product.out = not product.out
+        product.is_available = not product.is_available
         product.save()
 
         return Response(
@@ -123,7 +125,7 @@ class ProductTransferView(APIView):
                 "product": {
                     "code": product.code,
                     "title": product.title,
-                    "out": product.out
+                    "is_available": product.is_available
                 }
             },
             status=status.HTTP_200_OK
@@ -147,20 +149,11 @@ class ProductDetailsUpdateView(APIView):
         serializer = product_serializers.ProductSerializer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # def put(self, request, code):
-    #     try:
-    #         product = product_models.Product.objects.get(code=code)
-    #     except product_models.Product.DoesNotExist:
-    #         return Response(
-    #             {"error": "Il prodotto con il codice specificato non esiste."},
-    #             status=status.HTTP_404_NOT_FOUND
-    #         )
 
-    #     serializer = product_serializers.ProductSerializer(product, data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+def get_or_create_cart_id(request):
+    if 'cart_id' not in request.session:
+        request.session['cart_id'] = request.session.session_key or request.session.create()
+    return request.session['cart_id']
 
 
 def StoreView(request):
@@ -172,7 +165,7 @@ def StoreView(request):
     else:
         product_list = product_models.Product.objects.all().distinct().order_by('id')
 
-    paginator = Paginator(product_list, 12)  # Show 5 products per page
+    paginator = Paginator(product_list, 12)  # Show 12 products per page
 
     page = request.GET.get('page')
 
@@ -187,16 +180,25 @@ def StoreView(request):
 
     products_serialized = product_serializers.ProductSerializer(products, many=True)
 
+    session_cart_id = get_or_create_cart_id(request)
+    cart_items = orders_models.CartItem.objects.filter(session_id=session_cart_id)
+
     refined_products = []
     for product in products_serialized.data:
         refined_product = {
             'title': product['title'],
             'price': product['price'],
             'code': product['code'],
-            'out': product['out'],
             'is_available': product['is_available'],
             'description': product['description'],
+            'selected': False,
         }
+
+        for cart_item in cart_items:
+            if cart_item.product.code == product['code']:
+                refined_product['selected'] = True
+                break
+
         if 'images' in product.keys(): # Or .all() depending on relation
             # Assuming product.images is a related manager for image objects
             # and each image object has an 'image_base64' attribute.
@@ -211,7 +213,21 @@ def StoreView(request):
 
     tags = [tag.name for tag in tags]
 
-    return render(request, 'store.html', context={'products': refined_products, 'tags': tags, 'page_obj': products})
+    return render(request, 'store.html', {'products': refined_products, 'tags': tags, 'page_obj': products})
+
+def product_detail_view(request, product_code):
+    product = get_object_or_404(product_models.Product, code=product_code)
+    images = product_models.ProductImage.objects.filter(product=product)
+    # For the template, we might want to pass image URLs or base64 data
+    # Assuming ProductImage model has an 'image' field (ImageField)
+    image_urls = [img.image.url for img in images]
+
+    context = {
+        'product': product,
+        'image_urls': image_urls, # Or pass the images queryset directly if template handles it
+    }
+    return render(request, 'product_detail.html', context)
+
 
 
 def HomeView(request):
