@@ -6,19 +6,21 @@
     <img
       src="{{item.image}}"
       alt="product_image"
-      style="height: 12rem; width: 12rem; object-fit: cover"
+      style="width: 10rem; object-fit: cover"
     />
     <div class="cart-card-title">
-      <span style="font-size: 2rem; font-weight: 900"> {{ item.title }} </span>
+      <span style="font-size: 1.6rem; font-weight: 900">
+        {{ item.title }}
+      </span>
       <div>
         <div style="margin-bottom: 0.5rem; font-size: 1.2rem">
-          {{ item.price }} EUR
+          {{ item.price }}€
         </div>
-        <span style="opacity: 0.6"> Penalty fee: {{ item.penalty }} EUR </span>
+        <span style="opacity: 0.6"> Penalty fee: {{ item.penalty }}€ </span>
       </div>
     </div>
     <div class="cart-card-controls">
-      <button class="qty-button" onclick="updateCart('{{ item.code }}', -1)">
+      <button class="qty-button" onclick="updateCart('{{ item.code }}')">
         -
       </button>
     </div>
@@ -34,10 +36,9 @@
 {% endif %}
 
 <script>
-  function updateCart(productCode, quantity) {
-    if (quantity > 0) {
-      // Add to cart
-      fetch("/cart/add/", {
+  function updateCart(productCode) {
+    console.log(productCode);
+    fetch("/cart/remove/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,31 +46,12 @@
         },
         body: JSON.stringify({
           product_code: productCode,
-          quantity: quantity,
         }),
       })
         .then((response) => response.json())
         .then((data) => {
           window.location.reload();
         });
-    } else {
-      // Remove from cart
-      fetch("/cart/remove/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie(),
-        },
-        body: JSON.stringify({
-          product_code: productCode,
-          quantity: Math.abs(quantity),
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          window.location.reload();
-        });
-    }
   }
 
   function removeFromCart(productCode) {

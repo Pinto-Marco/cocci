@@ -93,8 +93,12 @@
                 <h3 class="product-card__title" style="color: #000;">{{ product.title }}</h3>
                 <p class="product-card__price">€{{ product.price }} EUR</p>
             </div>
-            {% if product.selected or not product.is_available %}
-            <button class="add-to-cart-btn-selected" data-product-code="{{ product.code }}" data-csrf="{{ csrf_token }}" disabled>
+            {% if product.selected %}
+            <button class="add-to-cart-btn-selected" data-product-code="{{ product.code }}" data-csrf="{{ csrf_token }}">
+                <svg width="28" height="28" viewBox="0 0 24 24" style="margin-top: 0.3rem;" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="m9.55 18l-5.7-5.7l1.425-1.425L9.55 15.15l9.175-9.175L20.15 7.4z"/></svg>
+            </button>
+            {% elif not product.is_available %}
+            <button class="add-to-cart-btn-disabled" data-product-code="{{ product.code }}" data-csrf="{{ csrf_token }}" disabled>
                 \
             </button>
             {% else %}

@@ -11,7 +11,11 @@
   <body>
     <header class="navbar">
       <div class="navbar__brand">
-        <img src="/media/images/logo.svg" alt="Cocci Logo" style="width: 9rem;">
+        <img
+          src="/media/images/logo.svg"
+          alt="Cocci Logo"
+          style="width: 9rem"
+        />
       </div>
       <nav class="navbar__menu">
         <a href="{% url 'home' %}" class="navbar__link">HOME</a>
@@ -33,6 +37,39 @@
           </svg>
           <span id="cart-count">{{ cart_count|default:'0' }}</span>
         </a>
+      </nav>
+    </header>
+
+    <header class="navbar-mobile">
+      <div class="navbar-row">
+        <div class="navbar__brand">
+          <img
+            src="/media/images/logo.svg"
+            alt="Cocci Logo"
+            style="width: 9rem"
+          />
+        </div>
+        <nav class="navbar__user">
+          <a href="{% url 'summary' %}" class="cart-link">
+            <svg
+              width="36"
+              height="36"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill="currentColor"
+                d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0 1a1 1 0 0 0-1 1a1 1 0 0 0 1 1a1 1 0 0 0 1-1a1 1 0 0 0-1-1m-9-1a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0 1a1 1 0 0 0-1 1a1 1 0 0 0 1 1a1 1 0 0 0 1-1a1 1 0 0 0-1-1M18 6H4.27l2.55 6H15c.33 0 .62-.16.8-.4l3-4c.13-.17.2-.38.2-.6a1 1 0 0 0-1-1m-3 7H6.87l-.77 1.56L6 15a1 1 0 0 0 1 1h11v1H7a2 2 0 0 1-2-2a2 2 0 0 1 .25-.97l.72-1.47L2.34 4H1V3h2l.85 2H18a2 2 0 0 1 2 2c0 .5-.17.92-.45 1.26l-2.91 3.89c-.36.51-.96.85-1.64.85"
+              />
+            </svg>
+            <span id="cart-count">{{ cart_count|default:'0' }}</span>
+          </a>
+        </nav>
+      </div>
+      <nav class="navbar-mobile__menu">
+        <a href="{% url 'home' %}" class="navbar__link">HOME</a>
+        <a href="{% url 'archive' %}" class="navbar__link">ARCHIVE</a>
+        <a href="{% url 'contacts' %}" class="navbar__link">CONTACTS</a>
       </nav>
     </header>
 

@@ -9,7 +9,7 @@ from .models import CartItem, Order, OrderItem
 
 # Utility function to get or create a cart session ID
 def get_or_create_cart_id(request):
-    if 'cart_id' not in request.session:
+    if 'cart_id' not in request.session or request.session['cart_id'] is None:
         request.session['cart_id'] = request.session.session_key or request.session.create()
     return request.session['cart_id']
 
@@ -77,18 +77,14 @@ class AddToCartView(APIView):
             return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
         
         session_id = get_or_create_cart_id(request)
+
+        print("Session ID:", session_id)
         
         # Check if product already in cart
-        cart_item, created = CartItem.objects.get_or_create(
+        CartItem.objects.get_or_create(
             product=product,
             session_id=session_id,
-            defaults={'quantity': quantity}
         )
-        
-        # If product already in cart, update quantity
-        if not created:
-            cart_item.quantity += quantity
-            cart_item.save()
         
         if is_api_call:
             return Response({"message": "Product added to cart"}, status=status.HTTP_200_OK)
@@ -108,32 +104,19 @@ class RemoveFromCartView(APIView):
         description="Remove a product from the cart"
     )
     def post(self, request):
-        if request.data:
-            product_code = request.data.get('product_code')
-            quantity = int(request.data.get('quantity', 1))
-            is_api_call = True
-        elif request.POST:
-            product_code = request.POST.get('product_code')
-            quantity = int(request.POST.get('quantity', 1))
-            is_api_call = False
-        else:
-            return Response({"error": "Missing product_code or quantity"}, status=status.HTTP_400_BAD_REQUEST)
-
-        remove_all = request.data.get('remove_all', False)
-        
+        product_code = request.data.get('product_code')
         session_id = get_or_create_cart_id(request)
+        print("Session ID:", session_id)
+        print("Product Code:", product_code)
         
         try:
             product = Product.objects.get(code=product_code)
+            print("Product:", product)
             cart_item = CartItem.objects.get(product=product, session_id=session_id)
         except (Product.DoesNotExist, CartItem.DoesNotExist):
             return Response({"error": "Product not found in cart"}, status=status.HTTP_404_NOT_FOUND)
         
-        if remove_all or cart_item.quantity <= quantity:
-            cart_item.delete()
-        else:
-            cart_item.quantity -= quantity
-            cart_item.save()
+        cart_item.delete()
         
         return Response({"message": "Product removed from cart"}, status=status.HTTP_200_OK)
 
@@ -173,7 +156,6 @@ class CheckoutView(APIView):
                 order=order,
                 product=item.product,
                 price=item.product.price,
-                quantity=item.quantity
             )
         
         # Clear cart
@@ -245,7 +227,6 @@ def CheckoutPageView(request):
                 order=order,
                 product=item.product,
                 price=item.product.price,
-                quantity=item.quantity
             )
         
         # Clear cart

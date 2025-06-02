@@ -8,7 +8,7 @@ class OrderItemInline(admin.TabularInline):
     extra = 0
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('label', 'email', 'created_at', 'session_id', 'total')
+    list_display = ('label', 'email', 'created_at', 'total')
     inlines = [OrderItemInline]
 
 admin.site.register(Order, OrderAdmin)
