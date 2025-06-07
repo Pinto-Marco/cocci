@@ -19,8 +19,6 @@ class ProductSerializer(serializers.ModelSerializer):
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
     )
-    # category_id = serializers.IntegerField(required=False)
-    # category_name = serializers.CharField(required=False)
     tags = serializers.ListField(child=serializers.CharField(), required=False)
 
     class Meta:
@@ -28,7 +26,10 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'code', 'price', 'title', 'description', 'barcode', 'tags', 'images', 'uploaded_images', 'penalty', 'is_available']
         # fields = '__all__'
 
-        # extra_fields = ['uploaded_images', 'category_id', 'category_name']
+    def get_tags(self, obj):
+        if obj.get_tags() is None:
+            return []
+        return obj.get_tags()
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
@@ -103,11 +104,6 @@ class ProductSerializer(serializers.ModelSerializer):
     #     if obj.get_category() is None:
     #         return None
     #     return obj.get_category().id
-    
-    def get_tags(self, obj):
-        if obj.get_tags() is None:
-            return []
-        return obj.get_tags()
 
 
     
