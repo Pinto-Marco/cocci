@@ -33,9 +33,6 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
-# Static files (CSS, JavaScript, Images)
-/static/
-
 # Media files (Uploads)
 /media/uploads/
 
