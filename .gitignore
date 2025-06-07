@@ -37,7 +37,7 @@ db.sqlite3-journal
 /static/
 
 # Media files (Uploads)
-/media/
+/media/uploads/
 
 # Virtual environment
 milestone_cuba_venv/
