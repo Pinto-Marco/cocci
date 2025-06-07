@@ -1,5 +1,54 @@
 {% extends "base.html" %} {% load static %} {% block content %}
 
-<div>Cocci</div>
+<div class="contacts">
+  <div class="contacts-left">
+    <div>
+      All orders must be approved and finalized by our sales team, who will
+      contact you after your request has been submitted.
+    </div>
+    <div>
+      We offer a <strong>rental service</strong> exclusively for brands (B2B)
+      for <strong>research and inspiration purposes</strong>.
+    </div>
+    <div>
+      Any special requests for styling or rentals for
+      <strong>film sets</strong> must be discussed and approved by our team.
+    </div>
+  </div>
+
+  <div class="contacts-info">
+    <h2 style="padding: 0 2rem; text-align: center">
+      Appointment Booking &amp; Order Inquiries
+    </h2>
+    <div
+      class="checkout-btn"
+      style="
+        border-top: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
+        border-left: none;
+        border-right: none;
+      "
+    >
+      <a
+        href="mailto:info@coccistore.it"
+        style="text-decoration: none; color: inherit"
+        >info@coccistore.it</a
+      >
+    </div>
+    <div
+      style="
+        padding: 0 2rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+      "
+    >
+      We will answer all inquiries as soon as possible.
+    </div>
+  </div>
+</div>
 
 {% endblock %}
