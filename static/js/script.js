@@ -200,12 +200,15 @@ document.addEventListener("DOMContentLoaded", () => {
         .forEach((b) => b.removeAttribute("selected"));
       const sortType = btn.dataset.sort;
       const cards = Array.from(productGrid.children);
+      console.log("Sorting by:", sortType);
+      console.log("Number of cards:", cards.length);
       const compare = {
         price_asc: (a, b) => a.dataset.price - b.dataset.price,
         price_desc: (a, b) => b.dataset.price - a.dataset.price,
         year_asc: (a, b) => a.dataset.code - b.dataset.code,
         year_desc: (a, b) => b.dataset.code - a.dataset.code,
       }[sortType];
+      productGrid.innerHTML = ""; // Clear existing cards
       cards.sort(compare).forEach((card) => productGrid.appendChild(card));
       btn.toggleAttribute("selected");
     });
