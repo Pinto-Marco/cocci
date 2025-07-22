@@ -10,6 +10,8 @@ COPY requirements.txt .
 # Installa le dipendenze
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN pip install gevent
+
 # Copia il resto del codice
 COPY . .
 
@@ -20,4 +22,5 @@ EXPOSE 8000
 # CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 # Comando di avvio
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "cocci.wsgi"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "cocci.wsgi"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "gevent", "--timeout", "240", "--graceful-timeout", "240", "--keep-alive", "5", "cocci.wsgi"]
