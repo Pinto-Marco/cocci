@@ -3,21 +3,27 @@ from product import models as product_models
 import base64
 
 class ProductImageSerializer(serializers.ModelSerializer):
-    image_base64 = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = product_models.ProductImage
-        fields = ['image_base64']
+        fields = ['image']
 
-    def get_image_base64(self, obj):
-        with open(obj.image.path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode('utf-8')
+    def get_image(self, obj):
+        return obj.image
+    
+    # def get_image_base64(self, obj):
+    #     with open(obj.image.path, "rb") as image_file:
+    #         return base64.b64encode(image_file.read()).decode('utf-8')
 
 
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True, source='productimage_set')
+    # uploaded_images = serializers.ListField(
+    #     child=serializers.ImageField(), write_only=True, required=False
+    # )
     uploaded_images = serializers.ListField(
-        child=serializers.ImageField(), write_only=True, required=False
+        child=serializers.CharField(), write_only=True, required=False
     )
     tags = serializers.ListField(child=serializers.CharField(), required=False)
 

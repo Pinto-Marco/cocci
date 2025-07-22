@@ -202,8 +202,9 @@ def StoreView(request):
         if 'images' in product.keys(): # Or .all() depending on relation
             # Assuming product.images is a related manager for image objects
             # and each image object has an 'image_base64' attribute.
-            image_base64_list = [img['image_base64'] for img in product['images']]
-            refined_product['images_json_data'] = json.dumps(image_base64_list)
+            # image_base64_list = [img['image'] for img in product['images']]
+            images = [img['image'] for img in product['images']]
+            refined_product['images_json_data'] = json.dumps(images)
         else:
             refined_product['images_json_data'] = "[]"
 
