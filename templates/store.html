@@ -84,7 +84,7 @@
 <!-- Product Grid -->
 <section id="productGrid" class="product-grid">
     {% for product in products %}
-    {% comment %} <a href="{% url 'product-detail' code=product.code %}" class="product-card-link" data-price="{{ product.price|floatformat:" 2" }}" data-code='{{ product.code }}' style="text-decoration: none;"> {% endcomment %}
+    <a href="{% url 'product-detail' code=product.code %}" class="product-card-link" data-price="{{ product.price|floatformat:" 2" }}" data-code='{{ product.code }}' style="text-decoration: none;">
     <div class="product-card"
         data-price="{{ product.price|floatformat:" 2" }}" data-code='{{ product.code }}' data-images='{{ product.images_json_data }}'>
         <img src="" alt="{{ product.name }}" class="product-card__image">

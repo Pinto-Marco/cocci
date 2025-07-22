@@ -6,7 +6,7 @@
     <img
       src="{{item.image}}"
       alt="product_image"
-      style="width: 10rem; object-fit: cover"
+      style="width: 10rem; object-fit: cover; height: 10rem"
     />
     <div class="cart-card-title">
       <span style="font-size: 1.6rem; font-weight: 900">
@@ -39,19 +39,19 @@
   function updateCart(productCode) {
     console.log(productCode);
     fetch("/cart/remove/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie(),
-        },
-        body: JSON.stringify({
-          product_code: productCode,
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          window.location.reload();
-        });
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie(),
+      },
+      body: JSON.stringify({
+        product_code: productCode,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        window.location.reload();
+      });
   }
 
   function removeFromCart(productCode) {

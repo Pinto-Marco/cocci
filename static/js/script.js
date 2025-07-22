@@ -1,6 +1,6 @@
 // Function to add product to cart
-function addToCart(productCode, token) {
-  fetch("/cart/add/", {
+async function addToCart(productCode, token) {
+  const response = await fetch("/cart/add/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -9,9 +9,8 @@ function addToCart(productCode, token) {
     body: JSON.stringify({
       product_code: productCode,
     }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
+  });
+  const data = await response.json();
       // Update cart count in navbar
       const cartCountElement = document.getElementById("cart-count");
       if (cartCountElement) {
@@ -32,11 +31,7 @@ function addToCart(productCode, token) {
           document.body.removeChild(notification);
         }, 500);
       }, 2500);
-    })
-    .catch((error) => {
-      console.error("Error adding to cart:", error);
-    });
-}
+    };
 
 function removeFromCart(productCode, token) {
   fetch("/cart/remove/", {
@@ -125,11 +120,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const addToCartButtons = document.querySelectorAll(".add-to-cart-btn");
   addToCartButtons.forEach((button) => {
-    button.addEventListener("click", (e) => {
+    button.addEventListener("click", async (e) => {
       e.preventDefault();
       const productCode = button.dataset.productCode;
       const token = button.dataset.csrf;
-      addToCart(productCode, token);
+      await addToCart(productCode, token);
       window.location.reload(); // Reload page after adding to cart
     });
   });
