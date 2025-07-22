@@ -187,7 +187,7 @@ def CartPageView(request):
             'penalty': item.product.penalty,
             'quantity': item.quantity,
             'total': item.total_price,
-            'image': images.first().image.url if images.exists() else None
+            'image': images.first().image if images.exists() else None
         }
         items.append(product_data)
     
@@ -257,6 +257,6 @@ def ProductDetailView(request, code):
     images = ProductImage.objects.filter(product=product)
     context = {
         'product': product,
-        'images': [image.image.url for image in images]
+        'images': [image.image for image in images]
     }
     return render(request, 'product_detail.html', context)
