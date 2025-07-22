@@ -79,18 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (Array.isArray(parsedData) && parsedData.length > 0) {
         // Option 1: If data-images contains an array of base64 strings
         if (typeof parsedData[0] === "string") {
-          imageUrls = parsedData.map(
-            (base64) => `data:image/*;base64,${base64}`
-          );
-        }
-        // Option 2: If data-images contains an array of objects like {image_base64: "..."}
-        else if (
-          typeof parsedData[0] === "object" &&
-          parsedData[0].hasOwnProperty("image_base64")
-        ) {
-          imageUrls = parsedData.map(
-            (obj) => `data:image/*;base64,${obj.image_base64}`
-          );
+          imageUrls = parsedData;
         }
       }
     } catch (e) {
