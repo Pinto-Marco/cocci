@@ -221,7 +221,7 @@ def product_detail_view(request, product_code):
     images = product_models.ProductImage.objects.filter(product=product)
     # For the template, we might want to pass image URLs or base64 data
     # Assuming ProductImage model has an 'image' field (ImageField)
-    image_urls = [img.image.url for img in images]
+    image_urls = [img.image for img in images]
 
     context = {
         'product': product,
