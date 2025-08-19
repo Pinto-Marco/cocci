@@ -456,6 +456,8 @@ main {
   padding: 0.6rem 1rem;
   margin: 0 1rem;
   border: 1px solid var(--color-border);
+  background-color: var(--color-border);
+  color: #fff;
 }
 
 .previous {

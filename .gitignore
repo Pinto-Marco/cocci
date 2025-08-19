@@ -39,6 +39,7 @@ db.sqlite3-journal
 # Virtual environment
 milestone_cuba_venv/
 venv_*
+.venv/
 
 .env
 .idea
