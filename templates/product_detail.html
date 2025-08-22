@@ -78,7 +78,10 @@
       "
     >
       <h1>{{ product.title }}</h1>
-      <h1>${{ product.price }}</h1>
+      <div style="display: flex; flex-direction: row; align-items: center;">
+        <h1>€{{ product.price }}</h1>
+        <p style="margin-left: 1rem"> (Penalty: €{{ product.penalty }})</p>
+      </div>
     </div>
     <p style="font-size: larger">{{ product.description }}</p>
   </div>

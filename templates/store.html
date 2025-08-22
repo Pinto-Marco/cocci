@@ -91,7 +91,6 @@
         <div class="product-card__meta">
             <div>
                 <h3 class="product-card__title" style="color: #000;">{{ product.title }}</h3>
-                <p class="product-card__price">€{{ product.price }} EUR</p>
             </div>
             {% if product.selected %}
             <button class="add-to-cart-btn-selected" data-product-code="{{ product.code }}" data-csrf="{{ csrf_token }}">
@@ -117,7 +116,8 @@
 <!-- Pagination Controls -->
 <div class="pagination">
     {% if page_obj.has_previous %}
-    <a class="previous" href="?page={{ page_obj.previous_page_number }}" style="text-decoration: none; color: var(--color-text);">{{ page_obj.previous_page_number }}</a>
+        <a class="previous" href="?page=1" style="text-decoration: none; color: var(--color-text);">First</a>
+        <a class="previous" href="?page={{ page_obj.previous_page_number }}" style="text-decoration: none; color: var(--color-text);">{{ page_obj.previous_page_number }}</a>
     {% endif %}
 
     <div class="current">
@@ -127,7 +127,8 @@
     </div>
 
     {% if page_obj.has_next %}
-        <a class="previous" href="?page={{ page_obj.next_page_number }}" style="text-decoration: none; color: var(--color-text);">{{ page_obj.next_page_number }}</a>
+        <a class="previous" href="?page={{ pager_obj.next_page_number }}" style="text-decoration: none; color: var(--color-text);">{{ page_obj.next_page_number }}</a>
+        <a class="previous" href="?page={{ page_obj.paginator.num_pages }}" style="text-decoration: none; color: var(--color-text);">Last</a>
     {% endif %}
 </div>
 
