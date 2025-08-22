@@ -232,3 +232,4 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB
 CSRF_TRUSTED_ORIGINS = ['https://cocciarchivio.it', 'https://www.cocciarchivio.it']
 
+# prova ci/cd
