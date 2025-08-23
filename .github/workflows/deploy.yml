@@ -25,3 +25,5 @@ jobs:
             git pull origin main
             docker build -t myapp .
             docker run -d -p 8000:8000 --name myapp_container -v /home/ec2-user/db:/app/db myapp
+            docker exec myapp_container python manage.py migrate --noinput
+            docker exec myapp_container python manage.py collectstatic --noinput
