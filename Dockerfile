@@ -23,4 +23,5 @@ EXPOSE 8000
 
 # Comando di avvio
 # CMD ["gunicorn", "--bind", "0.0.0.0:8000", "cocci.wsgi"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "gevent", "--timeout", "240", "--graceful-timeout", "240", "--keep-alive", "5", "cocci.wsgi"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "gevent", "--timeout", "240", "--graceful-timeout", "240", "--keep-alive", "5", "cocci.wsgi"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "1", "--worker-class", "gevent", "--timeout", "240", "--graceful-timeout", "240", "--keep-alive", "5", "cocci.wsgi"]
