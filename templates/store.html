@@ -118,17 +118,29 @@
     {% if page_obj.has_previous %}
         <a class="previous" href="?page=1" style="text-decoration: none; color: var(--color-text);">First</a>
         <a class="previous" href="?page={{ page_obj.previous_page_number }}" style="text-decoration: none; color: var(--color-text);">{{ page_obj.previous_page_number }}</a>
-    {% endif %}
-
-    <div class="current">
+        <div class="current">
         <span>
             {{ page_obj.number }}
         </span>
-    </div>
+        </div>
 
-    {% if page_obj.has_next %}
-        <a class="previous" href="?page={{ pager_obj.next_page_number }}" style="text-decoration: none; color: var(--color-text);">{{ page_obj.next_page_number }}</a>
-        <a class="previous" href="?page={{ page_obj.paginator.num_pages }}" style="text-decoration: none; color: var(--color-text);">Last</a>
+        {% if page_obj.has_next %}
+            <a class="previous" href="?page={{ page_obj.next_page_number }}" style="text-decoration: none; color: var(--color-text);">{{ page_obj.next_page_number }}</a>
+            <a class="previous" href="?page={{ page_obj.paginator.num_pages }}" style="text-decoration: none; color: var(--color-text);">Last</a>
+        {% endif %}
+    {% else %}
+        <div class="current">
+            <span>
+                {{ page_obj.number }}
+            </span>
+        </div>
+        {% if page_obj.has_next %}
+            <a class="previous" href="?page={{ page_obj.next_page_number }}" style="text-decoration: none; color: var(--color-text);">{{ page_obj.next_page_number }}</a>
+            {% if page_obj.paginator.num_pages > 2 %}
+                <a class="previous" href="?page=3" style="text-decoration: none; color: var(--color-text);">3</a>
+            {% endif %}
+            <a class="previous" href="?page={{ page_obj.paginator.num_pages }}" style="text-decoration: none; color: var(--color-text);">Last</a>
+        {% endif %}
     {% endif %}
 </div>
 

@@ -201,7 +201,7 @@ def StoreView(request):
         n_products = 9999  # If tags are provided, show all products with those tags
     else:
         product_list = product_models.Product.objects.all().distinct().order_by("id")
-        
+
     if sort:
         n_products = 9999  # If sorting is applied, show all products
         if sort == "price_asc":
@@ -209,9 +209,9 @@ def StoreView(request):
         elif sort == "price_desc":
             product_list = product_list.order_by("-price")
         elif sort == "year_asc":
-            product_list = product_list.order_by("code").distinct().order_by("id")
+            product_list = product_list.order_by("code")
         elif sort == "year_desc":
-            product_list = product_list.order_by("-code").distinct().order_by("id")
+            product_list = product_list.order_by("-code")
 
     paginator = Paginator(product_list, n_products)  # Show n_products per page
 

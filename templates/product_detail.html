@@ -74,13 +74,13 @@
         display: flex;
         direction: ltr;
         justify-content: space-between;
-        align-items: center;
+        align-items: end;
       "
     >
       <h1>{{ product.title }}</h1>
-      <div style="display: flex; flex-direction: row; align-items: center;">
-        <h1>€{{ product.price }}</h1>
-        <p style="margin-left: 1rem"> (Penalty: €{{ product.penalty }})</p>
+      <div style="display: flex; flex-direction: column; align-items: end;">
+        <p style="font-weight: bold; margin: 0; font-size: 2rem">Rental Fee: €{{ product.price }}</p>
+        <p style="margin: 0; font-size: small"> (Penalty Fee: €{{ product.penalty }})</p>
       </div>
     </div>
     <p style="font-size: larger">{{ product.description }}</p>
