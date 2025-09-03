@@ -1,0 +1,29 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/cocci
+            docker stop myapp_container || true
+            docker rm myapp_container || true
+            git pull origin main
+            docker build -t myapp .
+            docker run -d -p 8000:8000 --name myapp_container -v /home/ec2-user/db:/app/db myapp
+            docker exec myapp_container python manage.py migrate --noinput
+            docker exec myapp_container python manage.py collectstatic --noinput

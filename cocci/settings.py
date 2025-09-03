@@ -58,6 +58,8 @@ ALLOWED_HOSTS = [
     "cocci.herokuapp",
     "cocci.onrender.com",
     "56.228.2.180",
+    "www.cocciarchivio.it",
+    "cocciarchivio.it",
     "ec2-56-228-2-180.eu-north-1.compute.amazonaws.com",
 ]
 
@@ -119,7 +121,8 @@ WSGI_APPLICATION = "cocci.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME":  "/app/db/db.sqlite3",
+        # "NAME": BASE_DIR / "db_22_08_2025.sqlite3",
     }
 }
 
@@ -227,3 +230,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB
+CSRF_TRUSTED_ORIGINS = ['https://cocciarchivio.it', 'https://www.cocciarchivio.it']
+
