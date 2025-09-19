@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "product.apps.ProductConfig",
     "orders.apps.OrdersConfig",
+    "rangefilter",
 ]
 
 MIDDLEWARE = [

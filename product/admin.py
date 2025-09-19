@@ -3,6 +3,8 @@ from django.utils.html import format_html
 from . import models as product_models
 from django.conf import settings
 import os
+from django_admin_multi_select_filter.filters import MultiSelectRelatedFieldListFilter
+from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter, NumericRangeFilter
 
 class ProductImageInline(admin.TabularInline):  # Inline per le immagini del prodotto
     model = product_models.ProductImage
@@ -26,12 +28,47 @@ class ProductTagInline(admin.TabularInline):  # Inline per i tag del prodotto
     model = product_models.ProductTag
     extra = 0
 
+class TagFilter(admin.SimpleListFilter):
+    title = 'tag'
+    parameter_name = 'tag'
+
+    def lookups(self, request, model_admin):
+        tags = set(product_models.Tag.objects.all().values_list('name', flat=True))
+        return [(tag, tag) for tag in tags]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(producttag__tag__name__icontains=self.value())
+        return queryset
+
+# Per filtro range prezzo (min e max)
+class PriceRangeFilter(admin.SimpleListFilter):
+    title = 'price range'
+    parameter_name = 'price_range'
+
+    def lookups(self, request, model_admin):
+        return (('custom', 'Custom price range'),)
+
+    def queryset(self, request, queryset):
+        min_price = request.GET.get('min_price')
+        max_price = request.GET.get('max_price')
+        if min_price and max_price:
+            try:
+                min_price = float(min_price)
+                max_price = float(max_price)
+                return queryset.filter(price__gte=min_price, price__lte=max_price)
+            except ValueError:
+                pass
+        return queryset
+
+
 # ProductCategoryInline
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline, ProductTagInline]
     list_display = ('first_image', 'code', 'title', 'price', 'is_available') 
     # list_filter = ('price', 'tags__tag__name', 'is_available', 'title')
-    list_filter = ('price', 'is_available', 'title', 'producttag__tag__name')
+    list_filter = [('producttag__tag', MultiSelectRelatedFieldListFilter), ('price', NumericRangeFilter), 'is_available']
+    search_fields = ['title']
     # filtro per: prezzo, tag, is_available, title, 
 
     def barcode_image(self, obj):

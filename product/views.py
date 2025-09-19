@@ -20,7 +20,7 @@ class ProductView(APIView):
         description="Create a new product with optional images and associate it with a category.",
     )
     def post(self, request):
-        serializer = product_serializers.ProductSerializer(data=request.data)
+        serializer = product_serializers.ProductForPostSerializer(data=request.data)
         if serializer.is_valid():
             product = serializer.save()
             return Response(
