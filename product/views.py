@@ -193,6 +193,28 @@ class ProductDetailsUpdateView(APIView):
                 status=status.HTTP_201_CREATED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        request=product_serializers.ProductDeleteSerializer,
+        responses={200: "Product deleted successfully", 404: "Product not found"},
+        description="Elimina un prodotto tramite il codice",
+    )
+    def delete(self, request, code):
+        serializer = product_serializers.ProductDeleteSerializer(data=code)
+        if serializer.is_valid():
+            code = serializer.validated_data["code"]
+            try:
+                product = product_models.Product.objects.get(code=code)
+                product.delete()
+                return Response(
+                    {"detail": "Product deleted successfully"},
+                    status=status.HTTP_200_OK,
+                )
+            except product_models.Product.DoesNotExist:
+                return Response(
+                    {"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 
