@@ -177,6 +177,24 @@ class ProductDetailsUpdateView(APIView):
         serializer = product_serializers.ProductSerializer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        request=product_serializers.ProductSerializer,
+        responses=product_serializers.ProductSerializer,
+        description="Create a new product with optional images and associate it with a category.",
+    )
+    def post(self, request, code):
+        old_product = product_models.Product.objects.filter(code=code).first()
+        serializer = product_serializers.ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            product = serializer.save()
+            old_product.delete()
+            return Response(
+                product_serializers.ProductSerializer(product).data,
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
 
 def get_or_create_cart_id(request):
     if "cart_id" not in request.session:
