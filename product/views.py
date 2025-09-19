@@ -200,7 +200,7 @@ class ProductDetailsUpdateView(APIView):
         description="Elimina un prodotto tramite il codice",
     )
     def delete(self, request, code):
-        serializer = product_serializers.ProductDeleteSerializer(data=code)
+        serializer = product_serializers.ProductDeleteSerializer(data={"code": code})
         if serializer.is_valid():
             code = serializer.validated_data["code"]
             try:
