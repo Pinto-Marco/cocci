@@ -123,8 +123,8 @@ WSGI_APPLICATION = "cocci.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        # "NAME":  "/app/db/db.sqlite3",
-        "NAME": BASE_DIR / "db_22_08_2025.sqlite3",
+        "NAME":  "/app/db/db.sqlite3",
+        # "NAME": BASE_DIR / "db_22_08_2025.sqlite3",
     }
 }
 
