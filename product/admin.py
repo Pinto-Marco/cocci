@@ -30,7 +30,9 @@ class ProductTagInline(admin.TabularInline):  # Inline per i tag del prodotto
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline, ProductTagInline]
     list_display = ('first_image', 'code', 'title', 'price', 'is_available') 
-    filter = ('code', 'title', 'price', 'is_available') # prezzo, tag, is_available, title, 
+    # list_filter = ('price', 'tags__tag__name', 'is_available', 'title')
+    list_filter = ('price', 'is_available', 'title', 'producttag__tag__name')
+    # filtro per: prezzo, tag, is_available, title, 
 
     def barcode_image(self, obj):
         if obj.barcode:
