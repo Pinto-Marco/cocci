@@ -21,6 +21,7 @@ class ProductAdmin(admin.ModelAdmin):
         return "No barcode"
 
     barcode_image.short_description = 'Barcode'
+    # prova
 
 admin.site.register(product_models.Product, ProductAdmin)
 admin.site.register(product_models.ProductHistory)
