@@ -13,7 +13,7 @@ class ProductTagInline(admin.TabularInline):  # Inline per i tag del prodotto
 # ProductCategoryInline
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline, ProductTagInline]
-    list_display = ('code', 'title', 'price', 'is_available') 
+    list_display = ('code', 'title', 'price', 'is_available', 'first_image') 
 
     def barcode_image(self, obj):
         if obj.barcode:
@@ -21,6 +21,16 @@ class ProductAdmin(admin.ModelAdmin):
         return "No barcode"
 
     barcode_image.short_description = 'Barcode'
+
+    def first_image(self, obj):
+        image_obj = obj.productimage_set.first()
+        if image_obj and image_obj.image:
+            # Se fosse un ImageField: usa <img src="...">
+            # return format_html('<img src="{}" width="60" height="60" />', image_obj.image.url)
+            return image_obj.image  # Attualmente solo path/testo perché è un CharField
+        return "-"
+
+    first_image.short_description = "Image"
 
 admin.site.register(product_models.Product, ProductAdmin)
 admin.site.register(product_models.ProductHistory)

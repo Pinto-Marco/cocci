@@ -25,7 +25,8 @@ class ProductSerializer(serializers.ModelSerializer):
     uploaded_images = serializers.ListField(
         child=serializers.CharField(), write_only=True, required=False
     )
-    tags = serializers.ListField(child=serializers.CharField(), required=False)
+    # tags = serializers.ListField(child=serializers.CharField(), required=False)
+    tags = serializers.SerializerMethodField()
 
     class Meta:
         model = product_models.Product

@@ -50,6 +50,7 @@ if DEBUG:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 ALLOWED_HOSTS = [
+    "0.0.0.0",
     "localhost",
     "10.0.2.2",
     "127.0.0.1",
@@ -121,8 +122,8 @@ WSGI_APPLICATION = "cocci.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME":  "/app/db/db.sqlite3",
-        # "NAME": BASE_DIR / "db_22_08_2025.sqlite3",
+        # "NAME":  "/app/db/db.sqlite3",
+        "NAME": BASE_DIR / "db_22_08_2025.sqlite3",
     }
 }
 
