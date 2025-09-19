@@ -41,6 +41,7 @@ milestone_cuba_venv/
 venv_*
 .venv/
 .venv1/
+venv1/
 
 .env
 .idea
