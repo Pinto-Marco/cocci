@@ -184,7 +184,7 @@ class ProductDetailsUpdateView(APIView):
     )
     def post(self, request, code):
         old_product = product_models.Product.objects.filter(code=code).first()
-        serializer = product_serializers.ProductSerializer(data=request.data)
+        serializer = product_serializers.ProductForPostSerializer(data=request.data)
         if serializer.is_valid():
             product = serializer.save()
             old_product.delete()
