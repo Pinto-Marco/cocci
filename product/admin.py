@@ -13,14 +13,32 @@ class ProductTagInline(admin.TabularInline):  # Inline per i tag del prodotto
 # ProductCategoryInline
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline, ProductTagInline]
-    list_display = ('code', 'title', 'price', 'is_available') 
+    list_display = ('code', 'title', 'price', 'is_available', 'admin_barcode_actions')
+    actions = ['print_selected_barcodes']
+    exclude = ('barcode',)
 
-    def barcode_image(self, obj):
-        if obj.barcode:
-            return format_html('<img src="{}" width="100" height="100" />', obj.barcode.url)
-        return "No barcode"
+    def admin_barcode_actions(self, obj):
+        import urllib.parse
+        download_url = f"/products/barcode/{obj.code}/"
+        print_url = f"/products/print/?code={obj.code}&print=true"
+        return format_html(
+            '<a class="button" href="{}" download="{}_barcode.png" style="margin-right: 5px;">Download</a>'
+            '<a class="button" href="{}" target="_blank">Print</a>',
+            download_url,
+            obj.code,
+            print_url
+        )
 
-    barcode_image.short_description = 'Barcode'
+    admin_barcode_actions.short_description = 'Barcode Actions'
+
+    def print_selected_barcodes(self, request, queryset):
+        from django.http import HttpResponseRedirect
+        # We will build the URL for the print page with the selected product IDs
+        ids = ",".join([str(obj.id) for obj in queryset])
+        url = f"/products/print/?ids={ids}&print=true"
+        return HttpResponseRedirect(url)
+
+    print_selected_barcodes.short_description = 'Print Selected Barcodes'
 
 admin.site.register(product_models.Product, ProductAdmin)
 admin.site.register(product_models.ProductHistory)

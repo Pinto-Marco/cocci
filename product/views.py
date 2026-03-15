@@ -14,6 +14,10 @@ from django.db.models import Q, Case, When, Value, IntegerField
 import json
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
 from rest_framework.pagination import PageNumberPagination
+from django.http import HttpResponse
+from barcode import Code128
+from barcode.writer import ImageWriter
+from io import BytesIO
 
 
 class ProductView(APIView):
@@ -291,3 +295,27 @@ def ContactsView(request):
 @ensure_csrf_cookie
 def ProductDetailPageView(request, code):
     return render(request, "vue_base.html")
+
+
+def PrintBarcodesView(request):
+    ids_str = request.GET.get("ids", "")
+    if ids_str:
+        ids = ids_str.split(",")
+        products = product_models.Product.objects.filter(id__in=ids)
+    else:
+        # Fallback to single product by code if needed, but for now we use ids
+        code = request.GET.get("code")
+        if code:
+            products = product_models.Product.objects.filter(code=code)
+        else:
+            products = []
+            
+    return render(request, "product/print_barcodes.html", {"products": products})
+
+
+def BarcodeGenerateView(request, code):
+    # Generate barcode and return as PNG response
+    buffer = BytesIO()
+    barcode_image = Code128(str(code), writer=ImageWriter())
+    barcode_image.write(buffer)
+    return HttpResponse(buffer.getvalue(), content_type="image/png")

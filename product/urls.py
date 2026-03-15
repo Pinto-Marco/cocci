@@ -21,4 +21,6 @@ urlpatterns = [
         views.ProductDetailPageView,
         name="product-details-page",
     ),
+    path("print/", views.PrintBarcodesView, name="print-barcodes"),
+    path("barcode/<str:code>/", views.BarcodeGenerateView, name="barcode-generate"),
 ]

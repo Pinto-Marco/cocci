@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print Barcodes</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .barcode-container {
+            margin: 20px;
+            text-align: center;
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 250px;
+        }
+        .barcode-image {
+            width: 200px;
+            height: auto;
+        }
+        .product-info {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+            .barcode-container {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="width: 100%; text-align: center; margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Print Now</button>
+        <button onclick="window.history.back()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; margin-left: 10px;">Back</button>
+    </div>
+    
+    {% for product in products %}
+        <div class="barcode-container">
+            <img src="/products/barcode/{{ product.code }}/" class="barcode-image" alt="Barcode for {{ product.code }}">
+            <div class="product-info">
+                <strong>{{ product.title }}</strong><br>
+                Code: {{ product.code }}
+            </div>
+        </div>
+    {% empty %}
+        <p>No products selected or found.</p>
+    {% endfor %}
+
+    <script>
+        // Optional: Auto-trigger print if requested
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('print') === 'true') {
+            window.onload = () => window.print();
+        }
+    </script>
+</body>
+</html>

@@ -20,13 +20,6 @@ class Product(models.Model):
         return f"{self.title} - {self.code}"
 
     def save(self, *args, **kwargs):
-        if not self.barcode:
-            barcode_image = Code128(self.code, writer=ImageWriter())
-            buffer = BytesIO()
-            barcode_image.write(buffer)
-            file_name = f"{self.code}_barcode.png"
-            self.barcode.save(file_name, File(buffer), save=False)
-        
         super().save(*args, **kwargs)
 
     # def get_category(self):

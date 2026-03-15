@@ -27,11 +27,6 @@ class Order(models.Model):
         return f"Order {self.id} - {self.email}"
 
     def save(self, *args, **kwargs):
-        if self.confirmed:
-            items = OrderItem.objects.filter(order=self)
-            for item in items:
-                item.product.is_available = False
-                item.product.save()
         super().save(*args, **kwargs)
 
 class OrderItem(models.Model):
