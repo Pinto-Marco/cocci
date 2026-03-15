@@ -14,24 +14,35 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 from product.views import StoreView, HomeView, ContactsView
+from orders.views import OrderConfirmationView
 
 from cocci import settings
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('products/', include('product.urls')),
-    path('cart/', include('orders.urls')),
-    path('', HomeView, name='home'),
-    path('archive/', StoreView, name='archive'),
-    path('contacts/', ContactsView, name='contacts'),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('swagger/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path("admin/", admin.site.urls),
+    path("products/", include("product.urls")),
+    path("cart/", include("orders.urls")),
+    path("", HomeView, name="home"),
+    path("archive/", StoreView, name="archive"),
+    path("contacts/", ContactsView, name="contacts"),
+    path("order-confirmation/", OrderConfirmationView, name="order-confirmation"),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"
+    ),
+    path(
+        "swagger/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"
+    ),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

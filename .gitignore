@@ -45,3 +45,5 @@ venv_*
 .idea
 .vscode
 schema.yml
+
+staticfiles/
