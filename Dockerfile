@@ -29,7 +29,7 @@ COPY --from=frontend-build /app/static/dist ./static/frontend
 EXPOSE 8000
 
 # Comando per avviare Django
-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"] zio pesca
 
 # Comando di avvio
 # CMD ["gunicorn", "--bind", "0.0.0.0:8000", "cocci.wsgi"]
