@@ -6,25 +6,39 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          command_timeout: 60m
+          command_timeout: 10m
           script: |
-            cd /home/ec2-user/cocci
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
             docker stop myapp_container || true
             docker rm myapp_container || true
-            git pull origin main
-            docker build -t myapp .
-            docker run -d -p 8000:8000 --name myapp_container -v /home/ec2-user/db:/app/db myapp
+            docker run -d -p 8000:8000 --name myapp_container -v /home/ec2-user/db:/app/db ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
             docker exec myapp_container python manage.py migrate --noinput
             docker exec myapp_container python manage.py collectstatic --noinput
