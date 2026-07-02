@@ -1,3 +1,10 @@
+FROM node:20-slim AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
 # Usa un'immagine ufficiale di Python
 FROM python:3.11
 
@@ -15,6 +22,9 @@ RUN pip install gevent
 # Copia il resto del codice
 COPY . .
 
+# 
+COPY --from=frontend-build /app/frontend/dist ./static/frontend
+
 # Espone la porta su cui gira Django
 EXPOSE 8000
 
@@ -25,4 +35,3 @@ EXPOSE 8000
 # CMD ["gunicorn", "--bind", "0.0.0.0:8000", "cocci.wsgi"]
 # CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "gevent", "--timeout", "240", "--graceful-timeout", "240", "--keep-alive", "5", "cocci.wsgi"]
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "1", "--worker-class", "gevent", "--timeout", "240", "--graceful-timeout", "240", "--keep-alive", "5", "cocci.wsgi"]
-# speriamo che funzioni
