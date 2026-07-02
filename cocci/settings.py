@@ -254,4 +254,4 @@ SERVER_EMAIL = EMAIL_HOST_USER
 
 SHOP_OWNER_EMAIL = os.getenv("SHOP_OWNER_EMAIL")
 
-# Another test
+# Another test 2
