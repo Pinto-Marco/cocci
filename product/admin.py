@@ -65,44 +65,32 @@ class PriceRangeFilter(admin.SimpleListFilter):
 # ProductCategoryInline
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline, ProductTagInline]
-    list_display = ('first_image', 'code', 'title', 'price', 'is_available') 
-    # list_filter = ('price', 'tags__tag__name', 'is_available', 'title')
-    list_filter = [('producttag__tag', MultiSelectRelatedFieldListFilter), ('price', NumericRangeFilter), 'is_available']
-    search_fields = ['title']
-    # filtro per: prezzo, tag, is_available, title, 
+    list_display = ('code', 'title', 'price', 'is_available', 'admin_barcode_actions')
+    actions = ['print_selected_barcodes']
+    exclude = ('barcode',)
 
-    def barcode_image(self, obj):
-        if obj.barcode:
-            return format_html('<img src="{}" width="100" height="100" />', obj.barcode.url)
-        return "No barcode"
+    def admin_barcode_actions(self, obj):
+        import urllib.parse
+        download_url = f"/products/barcode/{obj.code}/"
+        print_url = f"/products/print/?code={obj.code}&print=true"
+        return format_html(
+            '<a class="button" href="{}" download="{}_barcode.png" style="margin-right: 5px;">Download</a>'
+            '<a class="button" href="{}" target="_blank">Print</a>',
+            download_url,
+            obj.code,
+            print_url
+        )
 
-    barcode_image.short_description = 'Barcode'
-    # prova
+    admin_barcode_actions.short_description = 'Barcode Actions'
 
-    def first_image(self, obj):
-        image_obj = obj.productimage_set.first()
-        if image_obj and image_obj.image:
-            image_path = image_obj.image
-            # Mostra direttamente se è un URL assoluto
-            if image_path.startswith("http"):
-                image_url = image_path
-            else:
-                from django.conf import settings
-                import os
-                image_url = os.path.join(settings.MEDIA_URL, image_path)
-            return format_html('<img src="{}" width="60" height="60" />', image_url)
-        return "-"
-    first_image.short_description = "Image"
-    
-    # def first_image(self, obj):
-    #     image_obj = obj.productimage_set.first()
-    #     if image_obj and image_obj.image:
-    #         # Se fosse un ImageField: usa <img src="...">
-    #         # return format_html('<img src="{}" width="60" height="60" />', image_obj.image.url)
-    #         return image_obj.image  # Attualmente solo path/testo perché è un CharField
-    #     return "-"
+    def print_selected_barcodes(self, request, queryset):
+        from django.http import HttpResponseRedirect
+        # We will build the URL for the print page with the selected product IDs
+        ids = ",".join([str(obj.id) for obj in queryset])
+        url = f"/products/print/?ids={ids}&print=true"
+        return HttpResponseRedirect(url)
 
-    # first_image.short_description = "Image"
+    print_selected_barcodes.short_description = 'Print Selected Barcodes'
 
 admin.site.register(product_models.Product, ProductAdmin)
 admin.site.register(product_models.ProductHistory)

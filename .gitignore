@@ -47,3 +47,5 @@ venv1/
 .idea
 .vscode
 schema.yml
+
+staticfiles/

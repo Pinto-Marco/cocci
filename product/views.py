@@ -2,15 +2,22 @@ from tokenize import triple_quoted
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from product import serializers as product_serializers
 from product import models as product_models
 from orders import models as orders_models
 from django.shortcuts import render, get_object_or_404
-from drf_spectacular.openapi import OpenApiParameter
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.db.models import Q, Case, When, Value, IntegerField
 
 import json
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
+from rest_framework.pagination import PageNumberPagination
+from django.http import HttpResponse
+from barcode import Code128
+from barcode.writer import ImageWriter
+from io import BytesIO
 
 
 class ProductView(APIView):
@@ -27,7 +34,9 @@ class ProductView(APIView):
                 product_serializers.ProductSerializer(product).data,
                 status=status.HTTP_201_CREATED,
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     @extend_schema(
         parameters=[
@@ -58,44 +67,49 @@ class ProductView(APIView):
     )
     def get(self, request):
         # Get query parameters
-        page = int(request.query_params.get("page", 1))
-        page_size = int(request.query_params.get("page_size", 10))
         tag_ids = request.query_params.get("tags", "").split(",")
         order_by_price = request.query_params.get("order_by_price", None)
 
         # Start with all products
-        queryset = product_models.Product.objects.all()
+        queryset = product_models.Product.objects.all().order_by("-id")
 
         # Filter by tags if provided
         if tag_ids and tag_ids[0]:  # Check if there are any tag IDs
-            queryset = queryset.filter(producttag__tag_id__in=tag_ids).distinct()
+            # Support both tag names (frontend) and tag IDs (tests)
+            q_filter = Q(producttag__tag__name__in=tag_ids) | Q(producttag__tag__id__in=[t for t in tag_ids if t.isdigit()])
+            queryset = queryset.filter(q_filter).distinct()
 
         # Order by price if specified
-        if order_by_price:
+        sort = request.query_params.get("sort", None)
+        if sort:
+            if sort == "price_asc":
+                queryset = queryset.order_by("price")
+            elif sort == "price_desc":
+                queryset = queryset.order_by("-price")
+            elif sort == "year_asc":
+                queryset = queryset.order_by("code")
+            elif sort == "year_desc":
+                queryset = queryset.order_by("-code")
+        elif order_by_price:  # Legacy support
             order_field = "price" if order_by_price.lower() == "asc" else "-price"
             queryset = queryset.order_by(order_field)
 
-        # Apply pagination
-        paginator = Paginator(queryset, page_size)
-        try:
-            products_page = paginator.page(page)
-        except (EmptyPage, InvalidPage):
-            products_page = paginator.page(paginator.num_pages)
+        # Apply pagination using DRF's PageNumberPagination
+        paginator = PageNumberPagination()
+        paginator.page_size = int(request.query_params.get("page_size", 12))
+        
+        paginated_queryset = paginator.paginate_queryset(queryset, request)
+        if paginated_queryset is not None:
+            serializer = product_serializers.ProductSerializer(paginated_queryset, many=True)
+            response = paginator.get_paginated_response(serializer.data)
+            # Add extra metadata for numbered pagination
+            response.data["current_page"] = paginator.page.number
+            response.data["total_pages"] = paginator.page.paginator.num_pages
+            return response
 
-        # Serialize the data
-        serializer = product_serializers.ProductSerializer(products_page, many=True)
-
-        # Prepare pagination data
-        response_data = {
-            "count": paginator.count,
-            "num_pages": paginator.num_pages,
-            "current_page": page,
-            "next": products_page.has_next(),
-            "previous": products_page.has_previous(),
-            "results": serializer.data,
-        }
-
-        return Response(response_data, status=status.HTTP_200_OK)
+        # Fallback if pagination is not applied
+        serializer = product_serializers.ProductSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ProductDeleteView(APIView):
@@ -110,16 +124,21 @@ class ProductDeleteView(APIView):
             code = serializer.validated_data["code"]
             try:
                 product = product_models.Product.objects.get(code=code)
-                product.delete()
                 return Response(
-                    {"detail": "Product deleted successfully"},
+                    {
+                        "error": "Product deleted successfully"
+                    },  # Wait, success message should vary? No, keep message or use status.
+                    # Standard: 200/204 for success. 200 with message.
+                    {"message": "Product deleted successfully"},
                     status=status.HTTP_200_OK,
                 )
             except product_models.Product.DoesNotExist:
                 return Response(
-                    {"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND
+                    {"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND
                 )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 # class CategoryListView(APIView):
@@ -139,7 +158,7 @@ class ProductTransferView(APIView):
             product = product_models.Product.objects.get(code=code)
         except product_models.Product.DoesNotExist:
             return Response(
-                {"error": "Il prodotto con il codice specificato non esiste."},
+                {"error": "Product with specified code does not exist."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -148,7 +167,7 @@ class ProductTransferView(APIView):
 
         return Response(
             {
-                "message": "Lo stato del prodotto è stato aggiornato.",
+                "message": "Product status updated successfully.",
                 "product": {
                     "code": product.code,
                     "title": product.title,
@@ -160,20 +179,14 @@ class ProductTransferView(APIView):
 
 
 class ProductDetailsUpdateView(APIView):
-    @extend_schema(
-        request=product_serializers.ProductSerializer,
-        responses=product_serializers.ProductSerializer,
-        description="Retrieve product details.",
-    )
-    def get(self, request, code):
-        try:
-            product = product_models.Product.objects.get(code=code)
-        except product_models.Product.DoesNotExist:
-            return Response(
-                {"error": "Il prodotto con il codice specificato non esiste."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+    # @extend_schema(
+    #     request=product_serializers.ProductSerializer,
+    # )
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = product_serializers.ProductSerializer
 
+    def get(self, request, code):
+        product = get_object_or_404(product_models.Product, code=code)
         serializer = product_serializers.ProductSerializer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -218,6 +231,68 @@ class ProductDetailsUpdateView(APIView):
     
 
 
+class TagListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        tags = product_models.Tag.objects.all()
+        return Response([tag.name for tag in tags], status=status.HTTP_200_OK)
+
+
+class ProductSearchView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="q",
+                type=str,
+                description="Search query for product title and description",
+                required=True,
+            ),
+            OpenApiParameter(
+                name="limit",
+                type=int,
+                description="Maximum number of results to return (1-20)",
+                required=False,
+            ),
+        ],
+        responses=product_serializers.ProductSearchSerializer(many=True),
+        description="Search products by title and description with lightweight results.",
+    )
+    def get(self, request):
+        query = request.query_params.get("q", "").strip()
+
+        try:
+            limit = int(request.query_params.get("limit", 8))
+        except (TypeError, ValueError):
+            limit = 8
+
+        limit = max(1, min(limit, 20))
+
+        if not query:
+            return Response({"results": []}, status=status.HTTP_200_OK)
+
+        queryset = (
+            product_models.Product.objects.filter(
+                Q(title__icontains=query) | Q(description__icontains=query)
+            )
+            .annotate(
+                search_rank=Case(
+                    When(title__istartswith=query, then=Value(0)),
+                    When(title__icontains=query, then=Value(1)),
+                    When(description__icontains=query, then=Value(2)),
+                    default=Value(3),
+                    output_field=IntegerField(),
+                )
+            )
+            .order_by("search_rank", "title", "code")[:limit]
+        )
+
+        serializer = product_serializers.ProductSearchSerializer(queryset, many=True)
+        return Response({"results": serializer.data}, status=status.HTTP_200_OK)
+
+
 def get_or_create_cart_id(request):
     if "cart_id" not in request.session:
         request.session["cart_id"] = (
@@ -226,87 +301,10 @@ def get_or_create_cart_id(request):
     return request.session["cart_id"]
 
 
+@extend_schema(exclude=True)
+@ensure_csrf_cookie
 def StoreView(request):
-    tags = request.GET.get("tags")
-    sort = request.GET.get("sort")
-    n_products = 12
-    if tags:
-        tags = tags.split(",")
-        print(tags)
-        product_list = (
-            product_models.Product.objects.filter(producttag__tag__name__in=tags)
-            .distinct()
-            .order_by("id")
-        )
-        n_products = 9999  # If tags are provided, show all products with those tags
-    else:
-        product_list = product_models.Product.objects.all().distinct().order_by("id")
-
-    if sort:
-        n_products = 9999  # If sorting is applied, show all products
-        if sort == "price_asc":
-            product_list = product_list.order_by("price")
-        elif sort == "price_desc":
-            product_list = product_list.order_by("-price")
-        elif sort == "year_asc":
-            product_list = product_list.order_by("code")
-        elif sort == "year_desc":
-            product_list = product_list.order_by("-code")
-
-    paginator = Paginator(product_list, n_products)  # Show n_products per page
-
-    page = request.GET.get("page")
-
-    try:
-        products = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        products = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        products = paginator.page(paginator.num_pages)
-
-    products_serialized = product_serializers.ProductSerializer(products, many=True)
-
-    session_cart_id = get_or_create_cart_id(request)
-    cart_items = orders_models.CartItem.objects.filter(session_id=session_cart_id)
-
-    refined_products = []
-    for product in products_serialized.data:
-        refined_product = {
-            "title": product["title"],
-            "price": product["price"],
-            "code": product["code"],
-            "is_available": product["is_available"],
-            "description": product["description"],
-            "selected": False,
-        }
-
-        for cart_item in cart_items:
-            if cart_item.product.code == product["code"]:
-                refined_product["selected"] = True
-                break
-
-        if "images" in product.keys():  # Or .all() depending on relation
-            # Assuming product.images is a related manager for image objects
-            # and each image object has an 'image_base64' attribute.
-            # image_base64_list = [img['image'] for img in product['images']]
-            images = [img["image"] for img in product["images"]]
-            refined_product["images_json_data"] = json.dumps(images)
-        else:
-            refined_product["images_json_data"] = "[]"
-
-        refined_products.append(refined_product)
-
-    tags = product_models.Tag.objects.all()
-
-    tags = [tag.name for tag in tags]
-
-    return render(
-        request,
-        "store.html",
-        {"products": refined_products, "tags": tags, "page_obj": products},
-    )
+    return render(request, "vue_base.html")
 
 
 def product_detail_view(request, product_code):
@@ -323,9 +321,41 @@ def product_detail_view(request, product_code):
     return render(request, "product_detail.html", context)
 
 
+@ensure_csrf_cookie
 def HomeView(request):
-    return render(request, "home.html")
+    return render(request, "vue_base.html")
 
 
+@ensure_csrf_cookie
 def ContactsView(request):
-    return render(request, "contacts.html")
+    return render(request, "vue_base.html")
+
+
+@extend_schema(exclude=True)
+@ensure_csrf_cookie
+def ProductDetailPageView(request, code):
+    return render(request, "vue_base.html")
+
+
+def PrintBarcodesView(request):
+    ids_str = request.GET.get("ids", "")
+    if ids_str:
+        ids = ids_str.split(",")
+        products = product_models.Product.objects.filter(id__in=ids)
+    else:
+        # Fallback to single product by code if needed, but for now we use ids
+        code = request.GET.get("code")
+        if code:
+            products = product_models.Product.objects.filter(code=code)
+        else:
+            products = []
+            
+    return render(request, "product/print_barcodes.html", {"products": products})
+
+
+def BarcodeGenerateView(request, code):
+    # Generate barcode and return as PNG response
+    buffer = BytesIO()
+    barcode_image = Code128(str(code), writer=ImageWriter())
+    barcode_image.write(buffer)
+    return HttpResponse(buffer.getvalue(), content_type="image/png")

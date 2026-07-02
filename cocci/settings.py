@@ -12,10 +12,13 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 # deploy
-import dj_database_url
+# import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -123,7 +126,7 @@ WSGI_APPLICATION = "cocci.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME":  "/app/db/db.sqlite3",
+        "NAME": "/app/db/db.sqlite3",
         # "NAME": BASE_DIR / "db_22_08_2025.sqlite3",
     }
 }
@@ -220,7 +223,7 @@ CORS_ALLOW_METHODS = [
 
 CORS_ALLOW_PRIVATE_NETWORK = True
 CORS_ALLOW_CREDENTIALS = True
-CSRF_USE_SESSIONS = True
+CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SAMESITE = None
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
@@ -232,5 +235,21 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB
-CSRF_TRUSTED_ORIGINS = ['https://cocciarchivio.it', 'https://www.cocciarchivio.it']
+CSRF_TRUSTED_ORIGINS = [
+    "https://cocciarchivio.it",
+    "https://www.cocciarchivio.it",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+
+SHOP_OWNER_EMAIL = os.getenv("SHOP_OWNER_EMAIL")
