@@ -253,3 +253,5 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
 
 SHOP_OWNER_EMAIL = os.getenv("SHOP_OWNER_EMAIL")
+
+# Making sure that the email settings are correctly loaded from environment variables
