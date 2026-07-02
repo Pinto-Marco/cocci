@@ -127,7 +127,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": "/app/db/db.sqlite3",
-        # "NAME": BASE_DIR / "db_22_08_2025.sqlite3",
+        # "NAME": "/Users/giuliodesana/Downloads/cocci_db_backup_02_07_2026.sqlite3",
     }
 }
 

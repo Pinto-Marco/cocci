@@ -186,10 +186,6 @@ class CheckoutView(APIView):
         # Create order
         order = Order.objects.create(email=email, session_id=session_id, total=total)
 
-        print("EMAIL_HOST_USER:", settings.EMAIL_HOST_USER)
-        print("DEFAULT_FROM_EMAIL:", settings.DEFAULT_FROM_EMAIL)
-        print("EMAIL_HOST_PASSWORD exists:", bool(settings.EMAIL_HOST_PASSWORD))
-
         # Send order emails
         send_order_emails(order)
 

@@ -63,6 +63,8 @@ dependencies = [
     { name = "click" },
     { name = "dj-database-url" },
     { name = "django" },
+    { name = "django-admin-multi-select-filter" },
+    { name = "django-admin-rangefilter" },
     { name = "django-extensions" },
     { name = "djangorestframework" },
     { name = "drf-spectacular" },
@@ -99,6 +101,8 @@ requires-dist = [
     { name = "click", specifier = "==8.1.8" },
     { name = "dj-database-url", specifier = "==2.3.0" },
     { name = "django", specifier = "==5.1.3" },
+    { name = "django-admin-multi-select-filter", specifier = ">=1.5.0" },
+    { name = "django-admin-rangefilter", specifier = ">=0.13.5" },
     { name = "django-extensions", specifier = "==3.2.3" },
     { name = "djangorestframework", specifier = "==3.15.2" },
     { name = "drf-spectacular", specifier = "==0.27.2" },
@@ -161,6 +165,27 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c6/85/ba2c2b83ba8b95354f99ed8344405d9571109ce0175028876209d6b93fba/Django-5.1.3.tar.gz", hash = "sha256:c0fa0e619c39325a169208caef234f90baa925227032ad3f44842ba14d75234a", size = 10698518, upload-time = "2024-11-05T05:24:27.27Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e5/f6/88ed57e1b3ed54ff18c1da352aecbd6f51784c3e642d97586b61f050f5b1/Django-5.1.3-py3-none-any.whl", hash = "sha256:8b38a9a12da3ae00cb0ba72da985ec4b14de6345046b1e174b1fd7254398f818", size = 8276180, upload-time = "2024-11-05T05:24:21.307Z" },
+]
+
+[[package]]
+name = "django-admin-multi-select-filter"
+version = "1.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3c/c3/df6078b888eafaf0d05cc75b265d51bec77fbd1b06709876a6a3015b9e33/django_admin_multi_select_filter-1.5.0.tar.gz", hash = "sha256:c992b970d43cee4d8720b7d7ca37db15b64457851a7f0f01402a7402be044813", size = 4450, upload-time = "2025-08-25T10:57:53.658Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/93/cf/dd6bf9ddb9763f98f78704f100e266cc29a2c1b38e655327a6faace5e5b4/django_admin_multi_select_filter-1.5.0-py3-none-any.whl", hash = "sha256:a6b0e5d3ec5fb568947d2df251b31ca05c2700f82cd0d4bb8a4f24a455bc5740", size = 5198, upload-time = "2025-08-25T10:57:52.461Z" },
+]
+
+[[package]]
+name = "django-admin-rangefilter"
+version = "0.13.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c3/29/ca800141c33d2df90eb3306c86f5a8c89c11d2d0493e5c503217f57fb0a1/django_admin_rangefilter-0.13.5.tar.gz", hash = "sha256:3134e9e877f59ccad5949cd25cd2db9bf20d170fd8070be584875fdca96d3a14", size = 23712, upload-time = "2025-12-13T07:58:31.327Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bd/ad/577f872dcc0107d608085b626103990028655b797eedab884242b61f6ac0/django_admin_rangefilter-0.13.5-py2.py3-none-any.whl", hash = "sha256:7fdcd1ee9007e2b76a5bd35bc017e785bdc7b17a24b8a36aef4ce80741356c47", size = 48383, upload-time = "2025-12-13T07:58:30.028Z" },
 ]
 
 [[package]]
