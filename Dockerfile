@@ -23,7 +23,7 @@ RUN pip install gevent
 COPY . .
 
 # 
-COPY --from=frontend-build /app/frontend/dist ./static/frontend
+COPY --from=frontend-build /app/static/dist ./static/frontend
 
 # Espone la porta su cui gira Django
 EXPOSE 8000
