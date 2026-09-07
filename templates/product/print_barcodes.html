@@ -1,61 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>Print Barcodes</title>
     <style>
-        body {
-            font-family: sans-serif;
+        /* 89 x 36 mm labels on A4: 2 columns x 8 rows = 16 per page. */
+        @page { size: A4; margin: 0; }
+
+        body { margin: 0; font-family: sans-serif; }
+
+        .sheet { width: 178mm; }          /* 2 x 89mm, flush from the top-left corner */
+        .sheet::after { content: ""; display: block; clear: both; }
+
+        .label {
+            float: left;                  /* ponytail: float paginates reliably in print, unlike grid/flex */
+            box-sizing: border-box;
+            width: 89mm;
+            height: 36mm;
+            padding: 1.5mm;
+            border: 1px solid #999;       /* cut guide; interior lines double up to 2px, harmless */
+            overflow: hidden;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            align-items: center;
+            gap: 2mm;
+            page-break-inside: avoid;
         }
-        .barcode-container {
-            margin: 20px;
-            text-align: center;
-            border: 1px solid #ccc;
-            padding: 10px;
-            width: 250px;
+
+        .label img {
+            width: 46mm;
+            height: 100%;
+            object-fit: contain;
+            flex: none;
         }
-        .barcode-image {
-            width: 200px;
-            height: auto;
+
+        .info { min-width: 0; line-height: 1.2; }
+
+        .info .title {
+            font-size: 11pt;
+            font-weight: bold;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;        /* long titles clip instead of growing the label */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-        .product-info {
-            margin-top: 10px;
-            font-size: 14px;
-        }
-        @media print {
-            .no-print {
-                display: none;
-            }
-            .barcode-container {
-                page-break-inside: avoid;
-            }
-        }
+
+        .info .code { font-size: 9pt; font-family: monospace; margin-top: 1mm; }
+
+        .no-print { padding: 10px; text-align: center; background: #eee; }
+        .no-print button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin: 0 5px; }
+        @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
-    <div class="no-print" style="width: 100%; text-align: center; margin-bottom: 20px;">
-        <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Print Now</button>
-        <button onclick="window.history.back()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; margin-left: 10px;">Back</button>
+    <div class="no-print">
+        <button onclick="window.print()">Print Now</button>
+        <button onclick="window.history.back()">Back</button>
+        <p><strong>Set "Margins: None" and "Scale: 100%" in the print dialog</strong>, or the 89&times;36mm size will be wrong.</p>
     </div>
-    
+
+    <div class="sheet">
     {% for product in products %}
-        <div class="barcode-container">
-            <img src="/products/barcode/{{ product.code }}/" class="barcode-image" alt="Barcode for {{ product.code }}">
-            <div class="product-info">
-                <strong>{{ product.title }}</strong><br>
-                Code: {{ product.code }}
+        <div class="label">
+            <img src="/products/barcode/{{ product.code }}/" alt="{{ product.code }}">
+            <div class="info">
+                <div class="title">{{ product.title }}</div>
+                <div class="code">{{ product.code }}</div>
             </div>
         </div>
     {% empty %}
         <p>No products selected or found.</p>
     {% endfor %}
+    </div>
 
     <script>
-        // Optional: Auto-trigger print if requested
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('print') === 'true') {
+        if (new URLSearchParams(location.search).get('print') === 'true') {
             window.onload = () => window.print();
         }
     </script>

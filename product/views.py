@@ -357,5 +357,6 @@ def BarcodeGenerateView(request, code):
     # Generate barcode and return as PNG response
     buffer = BytesIO()
     barcode_image = Code128(str(code), writer=ImageWriter())
-    barcode_image.write(buffer)
+    # quiet_zone 6.5mm default wasted a third of the 46mm label slot; 2.5mm is still Code128-spec safe
+    barcode_image.write(buffer, {"quiet_zone": 2.5, "module_height": 12, "write_text": False})
     return HttpResponse(buffer.getvalue(), content_type="image/png")
