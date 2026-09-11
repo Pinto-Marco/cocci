@@ -6,10 +6,23 @@ on:
       - main
 
 jobs:
-  build-and-push:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: pytest -q
+        env:
+          DEBUG: "True"
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -17,28 +30,62 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Tagged with the commit SHA as well as latest, so a bad deploy can be
+      # rolled back by re-running the old image instead of rebuilding it.
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/myapp:${{ github.sha }}
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           command_timeout: 10m
           script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
+            set -euo pipefail
+            IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/myapp:${{ github.sha }}"
+            docker pull "$IMAGE"
+
+            # sqlite + migrate = no undo. Keep the last 10 snapshots.
+            mkdir -p /home/ec2-user/db /home/ec2-user/media
+            if [ -f /home/ec2-user/db/db.sqlite3 ]; then
+              cp /home/ec2-user/db/db.sqlite3 \
+                 "/home/ec2-user/db/db.sqlite3.bak-$(date +%Y%m%d-%H%M%S)"
+              ls -1t /home/ec2-user/db/db.sqlite3.bak-* | tail -n +11 | xargs -r rm --
+            fi
+
+            # Migrate in a throwaway container before the old one stops, so a
+            # failing migration aborts the deploy with the site still up.
+            docker run --rm \
+              --env-file /home/ec2-user/.env \
+              -v /home/ec2-user/db:/app/db \
+              "$IMAGE" python manage.py migrate --noinput
+
             docker stop myapp_container || true
             docker rm myapp_container || true
-            docker run -d -p 8000:8000 --name myapp_container -v /home/ec2-user/db:/app/db ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
-            docker exec myapp_container python manage.py migrate --noinput
-            docker exec myapp_container python manage.py collectstatic --noinput
+            docker run -d -p 8000:8000 --name myapp_container \
+              --restart unless-stopped \
+              --env-file /home/ec2-user/.env \
+              -v /home/ec2-user/db:/app/db \
+              -v /home/ec2-user/media:/app/media/uploads \
+              "$IMAGE"
+
+            # Fail the job if the new container is not actually serving.
+            for i in $(seq 1 20); do
+              if curl -fsS -o /dev/null http://127.0.0.1:8000/; then
+                echo "up after ${i}s"; exit 0
+              fi
+              sleep 1
+            done
+            echo "container did not come up:"; docker logs --tail 50 myapp_container; exit 1

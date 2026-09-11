@@ -50,5 +50,6 @@ venv1/
 schema.yml
 
 staticfiles/
+media/animation/
 
 cocci_db_*
