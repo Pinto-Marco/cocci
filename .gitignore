@@ -46,6 +46,9 @@ venv1/
 .env
 .idea
 .vscode
+.claude/
 schema.yml
 
 staticfiles/
+
+cocci_db_*
