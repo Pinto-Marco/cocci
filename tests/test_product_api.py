@@ -111,3 +111,43 @@ class TestProductAPI:
         assert len(response.data["results"]) == 1
         result = response.data["results"][0]
         assert set(result.keys()) == {"code", "title", "description", "is_available"}
+
+
+@pytest.mark.django_db
+class TestMobileScannerAPI:
+    """The Flutter scanner hits these two by code; Product.fromJson is shared with the list endpoint."""
+
+    def test_lookup_returns_single_object_with_numeric_price(
+        self, api_client, product_factory
+    ):
+        product_factory(code="1753207703744", title="Scanned", price=12.0, penalty=3.5)
+
+        response = api_client.get("/products/lookup/1753207703744/")
+
+        assert response.status_code == 200
+        # assert on the rendered JSON: that is what Product.fromJson actually parses
+        body = response.json()
+        assert body["code"] == "1753207703744"
+        # fromJson assigns straight into double fields — strings would throw in Dart
+        assert isinstance(body["price"], float)
+        assert isinstance(body["penalty"], float)
+        assert body["tags"] == []
+        assert body["images"] == []
+        assert body["is_available"] is True
+
+    def test_lookup_unknown_code_404(self, api_client, db):
+        assert api_client.get("/products/lookup/nope/").status_code == 404
+
+    def test_toggle_post_flips_availability(self, api_client, product_factory):
+        product = product_factory(code="1753207703744", is_available=True)
+
+        assert api_client.post("/products/1753207703744/toggle/").status_code == 200
+        product.refresh_from_db()
+        assert product.is_available is False
+
+        api_client.post("/products/1753207703744/toggle/")
+        product.refresh_from_db()
+        assert product.is_available is True
+
+    def test_toggle_unknown_code_404(self, api_client, db):
+        assert api_client.post("/products/nope/toggle/").status_code == 404

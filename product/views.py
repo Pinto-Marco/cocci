@@ -177,6 +177,9 @@ class ProductTransferView(APIView):
             status=status.HTTP_200_OK,
         )
 
+    # ponytail: the mobile scanner POSTs /products/<code>/toggle/ — same flip, same response
+    post = get
+
 
 class ProductDetailsUpdateView(APIView):
     # @extend_schema(
