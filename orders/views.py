@@ -98,8 +98,6 @@ class AddToCartView(APIView):
 
         session_id = get_or_create_cart_id(request)
 
-        print("Session ID:", session_id)
-
         # Check if product already in cart
         item, created = CartItem.objects.get_or_create(
             product=product, session_id=session_id, defaults={"quantity": quantity}
@@ -135,12 +133,9 @@ class RemoveFromCartView(APIView):
     def post(self, request):
         product_code = request.data.get("product_code")
         session_id = get_or_create_cart_id(request)
-        print("Session ID:", session_id)
-        print("Product Code:", product_code)
 
         try:
             product = Product.objects.get(code=product_code)
-            print("Product:", product)
             cart_item = CartItem.objects.get(product=product, session_id=session_id)
         except (Product.DoesNotExist, CartItem.DoesNotExist):
             return Response(
