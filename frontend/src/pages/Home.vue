@@ -1,11 +1,19 @@
 <template>
   <div class="hero">
     <div style="position: relative; width: 100%">
-      <!-- Spline viewer script should be loaded globally or in index.html -->
-      <spline-viewer
-        class="spline-viewer"
-        url="https://prod.spline.design/DyIwvWOlzSiJ8RMj/scene.splinecode"
-      ></spline-viewer>
+      <video
+        class="hero-media"
+        :poster="skip ? LAST : FIRST"
+        :autoplay="!skip"
+        :preload="skip ? 'none' : 'auto'"
+        muted
+        playsinline
+        disablepictureinpicture
+        aria-label="Cocci Archivio logo animation"
+      >
+        <source :src="WEBM" type="video/webm" />
+        <source :src="MP4" type="video/mp4" />
+      </video>
       <div
         style="
           width: 100%;
@@ -49,7 +57,23 @@
 </template>
 
 <script setup lang="ts">
-// We assume spline-viewer script is loaded in the base template or index.html
+// Bound (not literal) so Vite treats these as runtime URLs, not build-time imports.
+const WEBM = "/static/dist/animation/hero.webm";
+const MP4 = "/static/dist/animation/hero.mp4";
+const FIRST = "/static/dist/animation/hero-first.webp";
+const LAST = "/static/dist/animation/hero-last.webp";
+
+// Plays once per tab session; afterwards (or under reduced-motion) the poster
+// alone shows the final frame and `preload="none"` skips the download entirely.
+let seen = false;
+try {
+  seen = sessionStorage.getItem("heroSeen") === "1";
+  sessionStorage.setItem("heroSeen", "1");
+} catch {
+  // ponytail: sessionStorage throws in some privacy modes; animation just replays
+}
+const skip =
+  seen || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 </script>
 
 <style scoped>

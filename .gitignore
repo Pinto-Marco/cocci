@@ -52,3 +52,13 @@ schema.yml
 staticfiles/
 
 cocci_db_*
+# Raw frame sequence for the hero animation (336 frames, 182MB). Only the
+# encoded output in frontend/public/animation/ is tracked and shipped. To
+# re-encode after a new render (25fps):
+#   ffmpeg -framerate 25 -i media/animation/%04d.webp -c:v libx264 -crf 21 \
+#     -preset slow -pix_fmt yuv420p -movflags +faststart -an hero.mp4
+#   ffmpeg -framerate 25 -i media/animation/%04d.webp -c:v libvpx-vp9 -crf 34 \
+#     -b:v 0 -row-mt 1 -cpu-used 2 -pix_fmt yuv420p -an hero.webm
+#   magick media/animation/0001.webp -quality 82 hero-first.webp   # poster, 1st frame
+#   magick media/animation/0336.webp -quality 82 hero-last.webp    # poster, last frame
+/media/animation/
