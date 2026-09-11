@@ -4,25 +4,37 @@
     <meta charset="utf-8">
     <title>Print Barcodes</title>
     <style>
-        /* 89 x 36 mm labels on A4: 2 columns x 8 rows = 16 per page. */
+        /* A4: 89x36mm, 2 cols x 8 rows = 16/page. 10x15cm: 89x30mm, 1 col x 5 rows = 5/page.
+           5 labels of 89x36 cannot fit 10x15cm at all (16020mm2 of label vs 15000mm2 of paper),
+           so the 10x15 sheet uses 30mm-tall labels: 5 x 30 = 150mm exactly, zero vertical waste. */
+{% if size == "10x15" %}
+        @page { size: 100mm 150mm; margin: 0; }
+        :root { --label-h: 30mm; }
+{% else %}
         @page { size: A4; margin: 0; }
+        :root { --label-h: 36mm; }
+{% endif %}
 
         body { margin: 0; font-family: sans-serif; }
 
+{% if size == "10x15" %}
+        .sheet { width: 89mm; }           /* 1 column, flush from the top-left corner */
+{% else %}
         .sheet { width: 178mm; }          /* 2 x 89mm, flush from the top-left corner */
+{% endif %}
         .sheet::after { content: ""; display: block; clear: both; }
 
         .label {
             float: left;                  /* ponytail: float paginates reliably in print, unlike grid/flex */
             box-sizing: border-box;
             width: 89mm;
-            height: 36mm;
+            height: var(--label-h);
             padding: 1.5mm;
             border: 1px solid #999;       /* cut guide; interior lines double up to 2px, harmless */
             overflow: hidden;
             display: flex;
             align-items: center;
-            gap: 2mm;
+            gap: 0;
             page-break-inside: avoid;
         }
 
@@ -36,10 +48,11 @@
         .info { min-width: 0; line-height: 1.2; }
 
         .info .title {
-            font-size: 11pt;
+            font-size: 9pt;
             font-weight: bold;
+            padding-right: 6mm;
             display: -webkit-box;
-            -webkit-line-clamp: 3;        /* long titles clip instead of growing the label */
+            -webkit-line-clamp: 2;        /* long titles clip instead of growing the label */
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -55,7 +68,7 @@
     <div class="no-print">
         <button onclick="window.print()">Print Now</button>
         <button onclick="window.history.back()">Back</button>
-        <p><strong>Set "Margins: None" and "Scale: 100%" in the print dialog</strong>, or the 89&times;36mm size will be wrong.</p>
+        <p>Paper: <strong>{% if size == "10x15" %}10&times;15cm{% else %}A4{% endif %}</strong>. Set <strong>"Margins: None"</strong> and <strong>"Scale: 100%"</strong> in the print dialog, or the 89&times;36mm size will be wrong.</p>
     </div>
 
     <div class="sheet">

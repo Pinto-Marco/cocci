@@ -66,7 +66,7 @@ class PriceRangeFilter(admin.SimpleListFilter):
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline, ProductTagInline]
     list_display = ('code', 'title', 'price', 'is_available', 'admin_barcode_actions')
-    actions = ['print_selected_barcodes']
+    actions = ['print_selected_barcodes', 'print_selected_barcodes_10x15']
     exclude = ('barcode',)
 
     def admin_barcode_actions(self, obj):
@@ -90,7 +90,14 @@ class ProductAdmin(admin.ModelAdmin):
         url = f"/products/print/?ids={ids}&print=true"
         return HttpResponseRedirect(url)
 
-    print_selected_barcodes.short_description = 'Print Selected Barcodes'
+    print_selected_barcodes.short_description = 'Print Selected Barcodes (A4, 16 per sheet)'
+
+    def print_selected_barcodes_10x15(self, request, queryset):
+        from django.http import HttpResponseRedirect
+        ids = ",".join([str(obj.id) for obj in queryset])
+        return HttpResponseRedirect(f"/products/print/?ids={ids}&size=10x15&print=true")
+
+    print_selected_barcodes_10x15.short_description = 'Print Selected Barcodes (10x15cm, 5 per sheet)'
 
 admin.site.register(product_models.Product, ProductAdmin)
 admin.site.register(product_models.ProductHistory)

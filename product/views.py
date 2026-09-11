@@ -350,7 +350,8 @@ def PrintBarcodesView(request):
         else:
             products = []
             
-    return render(request, "product/print_barcodes.html", {"products": products})
+    return render(request, "product/print_barcodes.html",
+                  {"products": products, "size": request.GET.get("size", "a4")})
 
 
 def BarcodeGenerateView(request, code):
@@ -358,5 +359,5 @@ def BarcodeGenerateView(request, code):
     buffer = BytesIO()
     barcode_image = Code128(str(code), writer=ImageWriter())
     # quiet_zone 6.5mm default wasted a third of the 46mm label slot; 2.5mm is still Code128-spec safe
-    barcode_image.write(buffer, {"quiet_zone": 2.5, "module_height": 12, "write_text": False})
+    barcode_image.write(buffer, {"quiet_zone": 2, "module_height": 12, "write_text": False})
     return HttpResponse(buffer.getvalue(), content_type="image/png")
