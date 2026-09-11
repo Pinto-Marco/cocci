@@ -1,0 +1,26 @@
+# Secrets and local state must never end up in the image.
+.env
+*.sqlite3
+*.sqlite3-journal
+db/
+# Solo gli upload: media/images/logo.svg è tracciato e serve nell'immagine.
+media/uploads/
+staticfiles/
+
+# Build/dev cruft
+.git
+.github
+.venv
+venv*/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.claude/
+.vscode/
+.idea/
+.DS_Store
+tests/
+frontend/node_modules
+# Ricostruito dallo stage frontend-build.
+static/dist

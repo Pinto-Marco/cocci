@@ -22,8 +22,16 @@ RUN pip install gevent
 # Copia il resto del codice
 COPY . .
 
-# 
+#
 COPY --from=frontend-build /app/static/dist ./static/dist
+
+# Il DB sqlite vive sul volume montato, non nell'immagine.
+ENV DB_PATH=/app/db/db.sqlite3
+
+# Static raccolti a build time: l'immagine è già completa e il deploy ha
+# un passaggio in meno che può fallire. SECRET_KEY fittizia: serve solo
+# perché Django si avvii, non finisce in nessun file raccolto.
+RUN SECRET_KEY=build-time-only python manage.py collectstatic --noinput
 
 # Espone la porta su cui gira Django
 EXPOSE 8000

@@ -27,12 +27,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-^m*h#ewhjg5&9rcuyjl12$!8zx@!wf1bv2%khph&il0k%ol(5!"
-
 # SECURITY WARNING: don't run with debug turned on in production!
+# Defaults to off: a forgotten env var must fail safe, not leak tracebacks.
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-DEBUG = True
+# SECURITY WARNING: keep the secret key used in production secret!
+# No prod fallback on purpose — an unset SECRET_KEY makes Django refuse to
+# boot, which beats booting with a key that is public in the repo history.
+SECRET_KEY = os.getenv(
+    "SECRET_KEY", "django-insecure-dev-only-do-not-use-in-production" if DEBUG else ""
+)
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
@@ -43,14 +47,21 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-# This production code might break development mode, so we check whether we're in DEBUG mode
-if DEBUG:
-    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
-    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+# collectstatic needs STATIC_ROOT in every mode, so it is unconditional.
+# (It used to live under `if DEBUG:`, which made collectstatic fail the moment
+# DEBUG was turned off — i.e. exactly in production.)
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
-    # and renames the files with unique names for each version to support long-term caching
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+if not DEBUG:
+    # WhiteNoise compresses static files to reduce disk use and bandwidth.
+    # ponytail: plain Compressed, not CompressedManifest — manifest hashing
+    # 500s a whole page over one missing {% static %} target. Switch to
+    # CompressedManifestStaticFilesStorage if you want long-term caching.
+    # STATICFILES_STORAGE was removed in Django 5.1; STORAGES replaces it.
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+    }
 
 ALLOWED_HOSTS = [
     "0.0.0.0",
@@ -126,8 +137,10 @@ WSGI_APPLICATION = "cocci.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        # "NAME": "/app/db/db.sqlite3",
-        "NAME": "/Users/giuliodesana/Developer/cocci/cocci/cocci_db_backup_02_07_2026.sqlite3",
+        # The container sets DB_PATH=/app/db/db.sqlite3 (the mounted volume);
+        # locally it falls back to the repo-root sqlite file. Nobody has to
+        # hand-edit this line per environment any more.
+        "NAME": os.getenv("DB_PATH", os.path.join(BASE_DIR, "db.sqlite3")),
     }
 }
 
@@ -178,9 +191,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-# STATIC_URL = 'static/'
-STATIC_URL = "/static/"
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -225,9 +235,14 @@ CORS_ALLOW_PRIVATE_NETWORK = True
 CORS_ALLOW_CREDENTIALS = True
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SAMESITE = None
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
-# CSRF_TRUSTED_ORIGINS = ["http://"]
+# Plain HTTP in dev, secure-only cookies in prod. nginx terminates TLS and
+# already 301s http -> https, so SECURE_SSL_REDIRECT would only add a hop.
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    # ponytail: 1 hour to start; raise to 31536000 once it is proven harmless.
+    SECURE_HSTS_SECONDS = 3600
 
 
 MEDIA_URL = "/media/"
