@@ -7,8 +7,17 @@ urlpatterns = [
     path("search/", views.ProductSearchView.as_view(), name="product-search"),
     path("tags/", views.TagListView.as_view(), name="tag-list"),
     path("<int:code>/", views.ProductTransferView.as_view(), name="product-transfer"),
-    # path('categories', views.CategoryListView.as_view(), name='categories-details'),
-    path("<int:code>/", views.ProductTransferView.as_view(), name="product-transfer"),
+    # mobile scanner: QR payload is the code, not the id
+    path(
+        "lookup/<str:code>/",
+        views.ProductDetailsUpdateView.as_view(),
+        name="product-lookup",
+    ),
+    path(
+        "<str:code>/toggle/",
+        views.ProductTransferView.as_view(),
+        name="product-toggle",
+    ),
     # API
     path(
         "api/details/<int:code>/",
