@@ -16,8 +16,8 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
-from django.conf.urls.static import static
+from django.urls import path, include, re_path
+from django.views.static import serve
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -44,8 +44,20 @@ urlpatterns = [
         "swagger/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"
     ),
 ]
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Media is served by Django in every mode. This used to be
+# `if settings.DEBUG: urlpatterns += static(...)`, and static() is itself a
+# no-op when DEBUG is off, so turning DEBUG off 404'd the logo and every
+# uploaded image.
+# ponytail: django.views.static.serve ties up a worker per file. The upgrade is
+# an nginx `location /media/ { alias /home/ec2-user/media/; }` on the host — the
+# deploy already mounts that directory — after which this block can go.
+urlpatterns += [
+    re_path(
+        r"^%s(?P<path>.*)$" % settings.MEDIA_URL.lstrip("/"),
+        serve,
+        {"document_root": settings.MEDIA_ROOT},
+    )
+]
 
 # lista di tutti i prodotti
 # update del prodotto
