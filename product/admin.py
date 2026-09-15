@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from . import models as product_models
+from .models import thumb
 from django.conf import settings
 import os
 from django_admin_multi_select_filter.filters import MultiSelectRelatedFieldListFilter
@@ -20,7 +21,8 @@ class ProductImageInline(admin.TabularInline):  # Inline per le immagini del pro
                 from django.conf import settings
                 import os
                 url = os.path.join(settings.MEDIA_URL, obj.image)
-            return format_html('<img src="{}" width="80" height="80" />', url)
+            # 80px preview, 2x for retina — not the 4MB original.
+            return format_html('<img src="{}" width="80" height="80" />', thumb(url, 160))
         return "-"
     image_tag.short_description = "Preview"
 

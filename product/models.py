@@ -88,3 +88,33 @@ class ProductTag(models.Model):
 
     def __str__(self):
         return f"{self.id} - {self.product.code} - {self.tag.name}"
+
+_PROXY = "https://wsrv.nl/?url="
+
+
+def unthumb(url):
+    """Recover the S3 original from a proxied URL.
+
+    The mobile app seeds its save payload with the URLs it was served
+    (cocci_mobile/lib/utils.dart:132), so without this the proxied URL would be
+    written back to the DB and then wrapped a second time.
+    """
+    if url and url.startswith(_PROXY):
+        return "https://" + url[len(_PROXY):].split("&", 1)[0]
+    return url
+
+
+def thumb(url, width=1000):
+    """Resize an S3 original through wsrv.nl before it reaches the browser.
+
+    The bucket holds untouched iPhone originals: 3024x3024, ~4MB each. The
+    archive grid renders 12 of them at ~350px, so a page used to pull ~50MB.
+    At w=1000 the same image is ~290KB.
+
+    ponytail: free third-party proxy, zero infra. The upgrade path is writing
+    _<width>.webp derivatives into the bucket at upload time and deleting this.
+    """
+    url = unthumb(url)
+    if not url or not url.startswith("https://"):
+        return url
+    return f"{_PROXY}{url[len('https://'):]}&w={width}&output=webp&q=80"

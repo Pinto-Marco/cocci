@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
-from product.models import Product, ProductImage
+from product.models import Product, ProductImage, thumb
 from .models import CartItem, Order, OrderItem
 from .email import send_order_emails
 from django.conf import settings
@@ -47,7 +47,7 @@ class CartView(APIView):
                 "penalty": item.product.penalty,
                 "quantity": item.quantity,
                 "total": item.total_price,
-                "image": images.first().image if images.exists() else None,
+                "image": thumb(images.first().image) if images.exists() else None,
             }
             items.append(product_data)
 

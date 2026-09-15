@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from product import models as product_models
+from product.models import thumb, unthumb
 import base64
 
 
@@ -11,7 +12,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ["image"]
 
     def get_image(self, obj):
-        return obj.image
+        return thumb(obj.image)
 
     # def get_image_base64(self, obj):
     #     with open(obj.image.path, "rb") as image_file:
@@ -81,7 +82,7 @@ class ProductSerializer(serializers.ModelSerializer):
         # Creiamo le immagini
         product_models.ProductImage.objects.bulk_create(
             [
-                product_models.ProductImage(product=product, image=image)
+                product_models.ProductImage(product=product, image=unthumb(image))
                 for image in uploaded_images
             ]
         )
@@ -152,6 +153,21 @@ class ProductSerializer(serializers.ModelSerializer):
 #             product_models.ProductImage.objects.create(product=product, image=image)
 
 #         return product
+
+
+class ProductForPostSerializer(ProductSerializer):
+    """Write-side twin of ProductSerializer.
+
+    ProductSerializer declares `tags` as a SerializerMethodField, which is
+    read-only, so a posted tag list was silently dropped. This subclass makes
+    it writable; `create()` is inherited and already handles tags + images.
+
+    ProductView.post and ProductDetailsUpdateView.post have always referenced
+    this name, but it was never defined — both endpoints raised AttributeError
+    and returned 500, so the mobile app could neither create nor save.
+    """
+
+    tags = serializers.ListField(child=serializers.CharField(), required=False)
 
 
 class ProductDeleteSerializer(serializers.Serializer):
